@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import AccountNav from "./AccountNav";
+import AccountNav from "./Account-Nav";
 import { EllipsisVertical } from "lucide-react";
 
 const AccountToggle = () => {
@@ -22,7 +22,7 @@ const AccountToggle = () => {
           <span className="mb-0 block h-5 font-bold">Hello, John!</span>
           <span className="mt-0 block text-xs font-light">Manager</span>
         </div>
-        <EllipsisVertical />
+        <EllipsisVertical className="group-hover:rotate-90 transition-transform absolute right-4" />
       </button>
       <AccountNav visible={visible}></AccountNav>
     </div>

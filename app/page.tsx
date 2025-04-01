@@ -1,12 +1,8 @@
-import { Content } from "@/components/Content/Content";
-
 function App() {
   return (
     <>
-      <main className="">
-        <Content>
-          <p>Hello!</p>
-        </Content>
+      <main>
+        <p>Hello!</p>
       </main>
     </>
   );

@@ -27,7 +27,7 @@ export const CommandMenu = ({
   const [value, setValue] = useState("");
 
   return (
-    <div className="">
+    <div>
       <Command.Dialog
         open={open}
         onOpenChange={setOpen}

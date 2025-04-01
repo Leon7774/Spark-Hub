@@ -1,37 +1,34 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
-import { ContentType, PageContext } from "../../../context/context";
 import clsx from "clsx";
-import { useContext } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ReactNode } from "react";
 
 export const RouteButton = ({
   routeText,
-  children,
   route,
+  children,
 }: {
   routeText: string;
-  children?: React.ReactNode;
   route: string;
+  children: ReactNode;
 }) => {
-  const data = useContext(PageContext);
-  const selected = data.content === routeText.toLocaleLowerCase();
+  const pathname = usePathname();
+  console.log(pathname);
 
   return (
-    <a href={route}>
+    <Link href={route}>
       <Button
         variant={"ghost"}
         className={clsx(
           "w-[100%] hover:bg-gray-300 flex justify-baseline cursor-pointer",
-          selected && "bg-gray-800 text-white hover:bg-gray-800"
+          route === pathname && "bg-gray-800 text-white hover:bg-gray-800"
         )}
-        onClick={() =>
-          data.setContent(routeText.toLocaleLowerCase() as ContentType)
-        }
       >
         {children}
         {routeText.toString()}
       </Button>
-    </a>
+    </Link>
   );
 };
