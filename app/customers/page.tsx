@@ -1,6 +1,10 @@
+import RootLayout from "../layout";
+
 const page = () => {
   return (
-    <div>page</div>
-  )
-}
-export default page
+    <RootLayout>
+      <div>page</div>
+    </RootLayout>
+  );
+};
+export default page;
