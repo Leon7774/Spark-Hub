@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { ContentType, PageContext } from "../../../context/context";
 import clsx from "clsx";

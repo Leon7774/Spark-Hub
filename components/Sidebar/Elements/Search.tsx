@@ -1,3 +1,5 @@
+"use client";
+
 import { Search as SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { CommandMenu } from "./CommandMenu";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import AccountNav from "./AccountNav";
 import { EllipsisVertical } from "lucide-react";

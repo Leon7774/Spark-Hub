@@ -1,3 +1,5 @@
+"use client";
+
 import { Command } from "cmdk";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { LogOut, Minus, Plus, View } from "lucide-react";

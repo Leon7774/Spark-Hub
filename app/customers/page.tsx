@@ -1,10 +1,4 @@
-import RootLayout from "../layout";
-
 const page = () => {
-  return (
-    <RootLayout>
-      <div>page</div>
-    </RootLayout>
-  );
+  return <div>Hello!</div>;
 };
 export default page;
