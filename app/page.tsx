@@ -19,11 +19,14 @@ function App() {
           <Sidebar></Sidebar>
         </PageContext.Provider>
         <Content>
-          {content === "sessions" && <Button></Button>}
+          {content === "sessions" && (
+            <Button className="shadow bg-orange-500 border-green-600">
+              HELLO
+            </Button>
+          )}
           {content === "customers" && "customers"}
           {content === "transactions" && "transactions"}
           {content === "log" && "log"}
-          {content === "gyatt" && "gyatt"}
         </Content>
       </main>
     </>

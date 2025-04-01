@@ -17,8 +17,8 @@ export const RouteButton = ({
     <Button
       variant={"ghost"}
       className={clsx(
-        "w-[100%] transition-colors hover:bg-gray-300",
-        selected && "bg-gray-800 text-white hover:bg-gray-800",
+        "w-[100%] hover:bg-gray-300 flex justify-baseline cursor-pointer",
+        selected && "bg-gray-800 text-white hover:bg-gray-800"
       )}
       onClick={() =>
         data.setContent(routeText.toLocaleLowerCase() as ContentType)

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AccountNav from "./AccountNav";
+import { EllipsisVertical } from "lucide-react";
 
 const AccountToggle = () => {
   const [visible, setVisible] = useState<boolean>(false);
@@ -19,11 +20,7 @@ const AccountToggle = () => {
           <span className="mb-0 block h-5 font-bold">Hello, John!</span>
           <span className="mt-0 block text-xs font-light">Manager</span>
         </div>
-        <img
-          src="client/src/assets/Icons/account-side.svg"
-          className="absolute top-1.5 right-2 size-7 transition-transform group-hover:rotate-90"
-          alt="icon"
-        />
+        <EllipsisVertical />
       </button>
       <AccountNav visible={visible}></AccountNav>
     </div>

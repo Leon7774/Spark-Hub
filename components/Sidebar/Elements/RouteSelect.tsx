@@ -16,9 +16,6 @@ export const RouteSelect = () => {
       <RouteButton routeText="Log">
         <Logs strokeWidth={3} className="mr-2" />
       </RouteButton>
-      <RouteButton routeText="gyatt">
-        <Logs strokeWidth={3} className="mr-2" />
-      </RouteButton>
     </div>
   );
 };
