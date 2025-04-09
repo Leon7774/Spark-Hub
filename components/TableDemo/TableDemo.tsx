@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
   ColumnDef,
@@ -37,227 +39,41 @@ import {
 const data: Payment[] = [
   {
     id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
+    amount: 316,
+    status: "success",
+    email: "ken99@example.com",
   },
   {
     id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
+    amount: 242,
+    status: "success",
+    email: "Abe45@example.com",
   },
   {
     id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
+    amount: 837,
+    status: "processing",
+    email: "Monserrat44@example.com",
   },
   {
     id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
+    amount: 874,
+    status: "success",
+    email: "Silas22@example.com",
   },
   {
     id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
-  },
-  {
-    id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
-  },
-  {
-    id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
-  },
-  {
-    id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
-  },
-  {
-    id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
-  },
-  {
-    id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
-  },
-  {
-    id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
-  },
-  {
-    id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
-  },
-  {
-    id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
-  },
-  {
-    id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
-  },
-  {
-    id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
-  },
-  {
-    id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
-  },
-  {
-    id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
-  },
-  {
-    id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
-  },
-  {
-    id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
-  },
-  {
-    id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
+    amount: 721,
+    status: "failed",
+    email: "carmella@example.com",
   },
 ];
 
 export type Payment = {
   id: string;
-  plan: "hourly" | "plan 350" | "monthly plan";
-  status: "in session" | "offline";
-  name: string;
+  amount: number;
+  status: "pending" | "processing" | "success" | "failed";
+  email: string;
 };
 
 export const columns: ColumnDef<Payment>[] = [
@@ -291,37 +107,33 @@ export const columns: ColumnDef<Payment>[] = [
     ),
   },
   {
-    accessorKey: "name",
+    accessorKey: "email",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Name
+          Email
           <ArrowUpDown />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
+    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
   },
   {
-    accessorKey: "plan",
-    header: () => <div className="text-right">Plan</div>,
+    accessorKey: "amount",
+    header: () => <div className="text-right">Amount</div>,
     cell: ({ row }) => {
-      const amount: string = row.getValue("plan");
+      const amount = parseFloat(row.getValue("amount"));
 
-      // // Format the amount as a dollar amount
-      // const formatted = new Intl.NumberFormat("en-US", {
-      //   style: "currency",
-      //   currency: "USD",
-      // }).format();
+      // Format the amount as a dollar amount
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
 
-      return (
-        <div className="text-right font-medium">
-          {amount.toLocaleUpperCase()}
-        </div>
-      );
+      return <div className="text-right font-medium">{formatted}</div>;
     },
   },
   {
@@ -332,16 +144,13 @@ export const columns: ColumnDef<Payment>[] = [
 
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger
-            asChild
-            className="flex items-center justify-center outline-none focus-visible:ring-0"
-          >
+          <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-white">
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(payment.id)}
@@ -350,7 +159,7 @@ export const columns: ColumnDef<Payment>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem>View payment details</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -388,12 +197,12 @@ export function DataTableDemo() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center py-4">
         <Input
-          placeholder="Filter name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter emails..."
+          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("email")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -403,7 +212,7 @@ export function DataTableDemo() {
               Columns <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-white">
+          <DropdownMenuContent align="end">
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -475,7 +284,7 @@ export function DataTableDemo() {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
+        <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
@@ -485,7 +294,6 @@ export function DataTableDemo() {
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="transition-colors hover:bg-gray-200"
           >
             Previous
           </Button>
@@ -494,7 +302,6 @@ export function DataTableDemo() {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="transition-colors hover:bg-gray-200"
           >
             Next
           </Button>

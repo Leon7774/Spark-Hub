@@ -1,5 +1,5 @@
 import { NotebookText, SquareChartGantt, User } from "lucide-react";
-import { RouteButton } from "./RouteButton";
+import { RouteButton } from "./Nav-Button";
 
 export const RouteSelect = () => {
   return (
@@ -13,7 +13,7 @@ export const RouteSelect = () => {
         <User strokeWidth={3} className="mr-2" />
       </RouteButton>
       {/* Button for subscriptions */}
-      <RouteButton route="/subscriptions" routeText="Transactions">
+      <RouteButton route="/subscriptions" routeText="Subscriptions">
         <NotebookText strokeWidth={3} className="mr-2"></NotebookText>
       </RouteButton>
     </div>

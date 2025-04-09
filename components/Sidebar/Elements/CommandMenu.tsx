@@ -3,6 +3,7 @@
 import { Command } from "cmdk";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { LogOut, Minus, Plus, View } from "lucide-react";
+import clsx from "clsx";
 
 export const CommandMenu = ({
   open,
@@ -57,7 +58,10 @@ export const CommandMenu = ({
               <Command.Item
                 value="first-item"
                 onSelect={() => console.log("First item selected!")}
-                className="first-item flex cursor-pointer items-center gap-2 rounded p-2 text-sm text-stone-950 transition-colors hover:bg-stone-200"
+                // TODO Fix Selection
+                className={clsx(
+                  "first-item flex cursor-pointer items-center gap-2 rounded p-2 text-sm text-stone-950 transition-colors hover:bg-stone-200"
+                )}
               >
                 <Plus size={12} strokeWidth={3} />
                 Add Customer
