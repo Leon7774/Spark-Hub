@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 15, "column": 0}, "map": {"version":3,"sources":["file:///Users/leon/code/Independent/Clients/sparkhub/app/page.tsx"],"sourcesContent":["\"use client\";\n\nimport { StrictMode } from \"react\";\nimport { createRoot } from \"react-dom/client\";\nimport App from \"./App\";\n\ncreateRoot(document.getElementById(\"root\")!).render(\n  <StrictMode>\n    <p>Hello</p>\n  </StrictMode>\n);\n"],"names":[],"mappings":";;AAEA;AACA;AAHA;;;;AAMA,CAAA,GAAA,kKAAA,CAAA,aAAU,AAAD,EAAE,SAAS,cAAc,CAAC,SAAU,MAAM,eACjD,8OAAC,qMAAA,CAAA,aAAU;cACT,cAAA,8OAAC;kBAAE","debugId":null}}]
+}
