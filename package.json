@@ -1,0 +1,19 @@
+{
+  "name": "sparkhub",
+  "version": "1.0.0",
+  "description": "Sparkhub is a web-based system administration software for Spark-Lab ",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd client && npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leon7774/Spark-Hub.git"
+  },
+  "author": "Leon7774",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Leon7774/Spark-Hub/issues"
+  },
+  "homepage": "https://github.com/Leon7774/Spark-Hub#readme"
+}

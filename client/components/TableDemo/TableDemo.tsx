@@ -208,7 +208,7 @@ export function DataTableDemo() {
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="destructive" className="ml-auto">
               Columns <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
