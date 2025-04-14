@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/leon/code/Independent/Clients/sparkhub/app/sessions/page.tsx"],"sourcesContent":["\"use client\";\n\nimport { SonnerDemo } from \"@/components/TableDemo/TableDemo\";\nimport { DataTableDemo } from \"@/components/Content/Elements/Table/Table\";\n\nconst Sessions = () => {\n  return (\n    <div>\n      <h1 className=\"font-black text-2xl\">Sessions</h1>\n      <TableDemo></TableDemo>\n    </div>\n  );\n};\nexport default Sessions;\n"],"names":[],"mappings":";;;;AAAA;;AAKA,MAAM,WAAW;IACf,qBACE,6LAAC;;0BACC,6LAAC;gBAAG,WAAU;0BAAsB;;;;;;0BACpC,6LAAC;;;;;;;;;;;AAGP;KAPM;uCAQS","debugId":null}}]
-}

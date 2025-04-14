@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/leon/code/Independent/Clients/sparkhub/client/app/not-found.tsx"],"sourcesContent":["const NotFound = () => {\n  return <div>Page not found!</div>;\n};\n\nexport const metadata = {\n  layout: false,\n};\n\nexport default NotFound;\n"],"names":[],"mappings":";;;;;;AAAA,MAAM,WAAW;IACf,qBAAO,8OAAC;kBAAI;;;;;;AACd;AAEO,MAAM,WAAW;IACtB,QAAQ;AACV;uCAEe","debugId":null}}]
-}
