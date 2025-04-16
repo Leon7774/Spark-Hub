@@ -21,6 +21,8 @@ async function getData(): Promise<Payment[]> {
 export default async function DemoPage() {
   const data = await getData();
 
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
   return (
     <div className="container mx-auto py-10">
       <DataTable columns={columns} data={data} />
