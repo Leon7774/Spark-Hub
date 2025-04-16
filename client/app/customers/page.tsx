@@ -1,4 +1,29 @@
-const page = () => {
-  return <div>Customers</div>;
-};
-export default page;
+import { Payment, columns } from "./columns";
+import { DataTable } from "./data-table";
+import { supabase } from "@/utils/supabase/server";
+
+async function getData(): Promise<Payment[]> {
+  const { data } = await supabase.from("sample").select();
+
+  console.log(data);
+
+  // Fetch data from your API here.
+  return [
+    {
+      id: "728ed52f",
+      amount: 100,
+      status: "pending",
+      email: "m@example.com",
+    },
+  ];
+}
+
+export default async function DemoPage() {
+  const data = await getData();
+
+  return (
+    <div className="container mx-auto py-10">
+      <DataTable columns={columns} data={data} />
+    </div>
+  );
+}
