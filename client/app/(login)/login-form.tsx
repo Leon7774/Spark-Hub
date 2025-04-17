@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { boolean, z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
+import { verifyLogin } from "@/utils/supabase/login";
+import { useState } from "react";
+import { verify } from "crypto";
 
 const formSchema = z.object({
   username: z.string().min(2, {
@@ -28,6 +30,8 @@ const formSchema = z.object({
 });
 
 export default function ProfileForm() {
+  const [isLoading, setLoading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,10 +41,9 @@ export default function ProfileForm() {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
+    verifyLogin(values);
   }
 
   return (
@@ -78,13 +81,18 @@ export default function ProfileForm() {
             </FormItem>
           )}
         />
-        <Link href={"/sessions"}>
-          <Button type="submit">Login</Button>
-        </Link>
+        {/* <Link
+          href={"/sessions"}
+        > */}
+        <Button type="submit" disabled={isLoading}>
+          Login
+        </Button>
+        {/* </Link> */}
         <Button
           className="ml-4"
           type="reset"
           variant={"outline"}
+          disabled={isLoading}
           onClick={() => {
             form.reset();
           }}

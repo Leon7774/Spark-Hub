@@ -16,9 +16,6 @@ export const RouteSelect = () => {
       <RouteButton route="/subscriptions" routeText="Subscriptions">
         <NotebookText strokeWidth={3} className="mr-2"></NotebookText>
       </RouteButton>
-      <RouteButton route="/subscriptions" routeText="Subscriptions">
-        <NotebookText strokeWidth={3} className="mr-2"></NotebookText>
-      </RouteButton>
     </div>
   );
 };

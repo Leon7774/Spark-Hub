@@ -6,7 +6,7 @@ const login = () => {
   return (
     <div className="h-full pb-20 flex items-center justify-center flex-col">
       <div className="w-80">
-        <div className="flex gap-2 pb-2 pl-4 border-b border-gray-200 mb-10">
+        <div className="flex gap-2 pb-2 pl-4 border-b border-gray-300 mb-10">
           <div className="flex items-center pb-2">
             <Sparkle size={38} color="#ff9f19" fill="#ff9f19" />
           </div>
