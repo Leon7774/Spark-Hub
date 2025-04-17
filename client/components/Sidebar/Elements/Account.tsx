@@ -4,9 +4,11 @@ import { useState } from "react";
 import AccountNav from "./Account-Nav";
 import { EllipsisVertical } from "lucide-react";
 import Image from "next/image";
+import { useUser } from "@/context/userContext";
 
 const AccountToggle = () => {
   const [visible, setVisible] = useState<boolean>(false);
+  const user = useUser();
 
   return (
     <div className="mt-2 overflow-visible border-t border-gray-400 pt-2 pb-4">
@@ -23,7 +25,9 @@ const AccountToggle = () => {
         />
 
         <div className="text-start">
-          <span className="mb-0 block h-5 font-bold">Hello, John!</span>
+          <span className="mb-0 block text-[10px] font-bold">
+            {user?.email}
+          </span>
           <span className="mt-0 block text-xs font-light">Manager</span>
         </div>
         <EllipsisVertical className="group-hover:rotate-90 transition-transform absolute right-4" />

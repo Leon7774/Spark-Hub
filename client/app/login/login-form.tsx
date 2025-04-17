@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { boolean, z } from "zod";
+import { login } from "./actions";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +20,18 @@ import { verifyLogin } from "@/utils/supabase/login";
 import { useState } from "react";
 import { verify } from "crypto";
 
-const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
+export interface userCredentials {
+  email: string;
+  password: string;
+}
 
-  password: z.string().min(10, {
-    message: "Username must be at least 10 characters.",
+const formSchema = z.object({
+  email: z
+    .string()
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { message: "Invalid email format." }),
+
+  password: z.string().min(3, {
+    message: "Password must be at least 3 characters.",
   }),
 });
 
@@ -35,7 +41,7 @@ export default function ProfileForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -43,7 +49,7 @@ export default function ProfileForm() {
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    verifyLogin(values);
+    login(values);
   }
 
   return (
@@ -51,16 +57,14 @@ export default function ProfileForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="username"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>E-Mail</FormLabel>
               <FormControl>
                 <Input placeholder="Enter username" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
+              <FormDescription>Enter your E-Mail here</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -72,11 +76,13 @@ export default function ProfileForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input placeholder="Enter username" {...field} />
+                <Input
+                  placeholder="Enter password"
+                  type="password"
+                  {...field}
+                />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
+              <FormDescription>Enter your password here</FormDescription>
               <FormMessage />
             </FormItem>
           )}
