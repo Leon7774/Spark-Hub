@@ -1,9 +1,10 @@
 import { Payment, columns } from "./columns";
 import { DataTable } from "./data-table";
-import { supabase } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 async function getData(): Promise<Payment[]> {
-  const { data } = await supabase.from("sample").select();
+  const supabase = createClient();
+  const data = await (await supabase).from("sample").select();
 
   console.log(data);
 

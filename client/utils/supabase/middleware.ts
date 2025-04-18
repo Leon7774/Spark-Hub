@@ -64,10 +64,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (request.nextUrl.pathname === "/sessions" && user) {
-    const sessionResult = await supabase.auth.getSession();
-    console.log("\n\nCURRENT SESSION: " + JSON.stringify(sessionResult));
-  }
+  // if (request.nextUrl.pathname === "/sessions" && user) {
+  //   const sessionResult = await supabase.auth.getSession();
+  //   console.log(
+  //     "\n\nCURRENT SESSION: " + JSON.stringify(sessionResult, null, 2)
+  //   );
+  // }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
