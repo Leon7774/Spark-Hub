@@ -1,8 +1,8 @@
 import AccountToggle from "./Elements/Account";
-import { Search } from "./Elements/Search";
 import { Logo } from "./Elements/Logo";
 import { RouteSelect } from "./Elements/Nav-Menu";
-import { CommandDialogDemo } from "../CommandBar";
+import { Command, CommandDialogDemo } from "./Elements/Command";
+import { Search } from "./Elements/Search";
 
 export const Sidebar = () => {
   return (
@@ -10,7 +10,7 @@ export const Sidebar = () => {
       <div className="sticky top-4 h-[calc(100vh-32px-64px)] overflow-visible overflow-y-scroll pt-3 transition-colors [&::-webkit-scrollbar]:hidden overflow-x-hidden [scrollbar-width:none]">
         <Logo></Logo>
         <AccountToggle />
-        <CommandDialogDemo></CommandDialogDemo>
+        <Search></Search>
         <RouteSelect></RouteSelect>
       </div>
     </div>
