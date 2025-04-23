@@ -59,7 +59,7 @@ export function Command({
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Customer">
-            <CommandItem>
+            <CommandItem onSelect={() => console.log("print")}>
               <LogIn></LogIn>
               <span>Login Customer</span>
             </CommandItem>
