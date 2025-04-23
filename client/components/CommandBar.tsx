@@ -5,6 +5,11 @@ import {
   Calculator,
   Calendar,
   CreditCard,
+  LogIn,
+  LogOut,
+  LogOutIcon,
+  PenBoxIcon,
+  PlusSquareIcon,
   Settings,
   Smile,
   User,
@@ -48,18 +53,18 @@ export function CommandDialogDemo() {
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
+          <CommandGroup heading="Customer">
             <CommandItem>
-              <Calendar />
-              <span>Calendar</span>
+              <LogIn></LogIn>
+              <span>Login Customer</span>
             </CommandItem>
             <CommandItem>
-              <Smile />
-              <span>Search Emoji</span>
+              <LogOut></LogOut>
+              <span>Logout Customer</span>
             </CommandItem>
             <CommandItem>
-              <Calculator />
-              <span>Calculator</span>
+              <PenBoxIcon></PenBoxIcon>
+              <span>Register Customer</span>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator />
