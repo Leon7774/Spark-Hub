@@ -25,9 +25,7 @@ const AccountToggle = () => {
         />
 
         <div className="text-start">
-          <span className="mb-0 block text-[10px] font-bold">
-            {user?.email}
-          </span>
+          <span className="mb-0 block text-[8px] font-bold">{user?.email}</span>
           <span className="mt-0 block text-xs font-light">Manager</span>
         </div>
         <EllipsisVertical className="group-hover:rotate-90 transition-transform absolute right-4" />

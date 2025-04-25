@@ -389,14 +389,19 @@ export function DataTableDemo() {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <Input
-          placeholder="Filter name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+        <div className="flex">
+          <Button variant={"default"} className=" mr-5">
+            Register Customer
+          </Button>
+          <Input
+            placeholder="Filter name..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("name")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -485,7 +490,7 @@ export function DataTableDemo() {
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="transition-colors hover:bg-gray-200"
+            className="transition-colors "
           >
             Previous
           </Button>
@@ -494,7 +499,7 @@ export function DataTableDemo() {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="transition-colors hover:bg-gray-200"
+            className="transition-colors"
           >
             Next
           </Button>
