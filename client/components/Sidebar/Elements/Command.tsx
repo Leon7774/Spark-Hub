@@ -14,6 +14,7 @@ import {
   Settings,
   Smile,
   User,
+  UsersIcon,
 } from "lucide-react";
 
 import {
@@ -70,6 +71,10 @@ export function Command({
             <CommandItem>
               <PenBoxIcon></PenBoxIcon>
               <span>Register Customer</span>
+            </CommandItem>
+            <CommandItem>
+              <UsersIcon></UsersIcon>
+              <span>View Customers</span>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator />

@@ -1,6 +1,7 @@
 import { Payment, columns } from "./columns";
 import { DataTable } from "./data-table";
 import { createClient } from "@/utils/supabase/server";
+import { payments } from "./payments";
 
 async function getData(): Promise<Payment[]> {
   const supabase = createClient();
@@ -20,9 +21,7 @@ async function getData(): Promise<Payment[]> {
 }
 
 export default async function DemoPage() {
-  const data = await getData();
-
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  const data = payments;
 
   return (
     <div className="container mx-auto py-10">
