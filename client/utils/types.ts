@@ -4,10 +4,11 @@
 export type Customer = [
   // Primary Key
   id: number,
-  firstName: string,
-  lastName: string,
-  totalPaid: number,
-  totalDays: number
+  first_name: string,
+  last_name: string,
+  created_at: Date,
+  total_spent: number,
+  total_hours: number
 ];
 
 // Details of a subscription plan

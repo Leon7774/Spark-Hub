@@ -1,7 +1,6 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { boolean } from "zod";
 
 export type Subscription = {
   id: number;
@@ -29,7 +28,7 @@ export const columns: ColumnDef<Subscription>[] = [
   {
     accessorKey: "id",
     header: "ID",
-    size: 0,
+    size: 4,
     minSize: 0,
   },
   {
@@ -49,6 +48,7 @@ export const columns: ColumnDef<Subscription>[] = [
 
       return <div className="text-right font-medium">{formatted}</div>;
     },
+    size: 400,
   },
   {
     accessorKey: "active",

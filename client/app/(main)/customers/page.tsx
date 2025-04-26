@@ -1,27 +1,18 @@
-import { Payment, columns } from "./columns";
-import { DataTable } from "./data-table";
-import { createClient } from "@/utils/supabase/server";
-import { payments } from "./payments";
+import { columns } from "./columns";
+import { DataTable } from "@/components/ui/data-table";
+import { Customer } from "@/utils/types";
+import { Client as supabase } from "@/utils/supabase/client";
+import { z } from "zod";
 
-async function getData(): Promise<Payment[]> {
-  const supabase = createClient();
-  const data = await (await supabase).from("sample").select();
+async function getData(): Promise<Customer[]> {
+  const data: Customer[] = await supabase.from("customers").select("*")
+    .overrideTypes<Customer, { merge: false }>;
 
-  console.log(data);
-
-  // Fetch data from your API here.
-  return [
-    {
-      id: "728ed52f",
-      amount: 100,
-      status: "pending",
-      email: "m@example.com",
-    },
-  ];
+  return data ?? [];
 }
 
 export default async function DemoPage() {
-  const data = payments;
+  const data = getData();
 
   return (
     <div className="container mx-auto py-10">
