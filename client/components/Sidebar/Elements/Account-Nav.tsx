@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { logout } from "@/app/api/actions";
+import { logout } from "@/app/api/authentication";
 
 const AccountNav = ({ visible }: { visible: boolean }) => {
   return (

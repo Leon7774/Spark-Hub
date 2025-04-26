@@ -26,3 +26,4 @@ export async function getCustomers(): Promise<Customer[]> {
 }
 
 console.log(getCustomers());
+

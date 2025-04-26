@@ -9,7 +9,7 @@ export const columns: ColumnDef<Customer>[] = [
     header: "ID",
   },
   {
-    accessorKey: "firstName",
+    accessorKey: "first_name",
     header: "lastName",
   },
   {
