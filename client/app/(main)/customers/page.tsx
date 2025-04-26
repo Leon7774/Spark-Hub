@@ -1,22 +1,16 @@
 import { columns } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
-import { Customer } from "@/utils/types";
-import { Client as supabase } from "@/utils/supabase/client";
-import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { getCustomers } from "@/app/api/customers";
 
-async function getData(): Promise<Customer[]> {
-  const data: Customer[] = await supabase.from("customers").select("*")
-    .overrideTypes<Customer, { merge: false }>;
-
-  return data ?? [];
-}
-
-export default async function DemoPage() {
-  const data = getData();
+export default async function Page() {
+  const customers = getCustomers()
 
   return (
-    <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={data} />
+    <div className="container">
+      <h1 className="font-black text-2xl mb-10">Customers</h1>
+      <Button className="mb-2">Register Customer</Button>
+      <DataTable columns={columns} data={customers} />
     </div>
   );
 }
