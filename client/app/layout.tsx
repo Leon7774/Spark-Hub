@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "../globals.css";
+import "./globals.css";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import { Content } from "@/components/Content/Content";
 import { UserProvider } from "@/context/userContext";
@@ -26,14 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable}  bg-background-1 dark:bg antialiased grid grid-cols-[200px_1fr] gap-4 p-4`}
-      style={{ overscrollBehavior: "none" }}
-    >
-      <UserProvider>
-        <Sidebar></Sidebar>
-        <Content>{children}</Content>
-      </UserProvider>
-    </div>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} m-0 p-0`}
+        style={{ overscrollBehavior: "none" }}
+      >
+        {children}
+      </body>
+    </html>
   );
 }

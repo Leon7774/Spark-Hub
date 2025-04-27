@@ -1,5 +1,5 @@
-import { DataTable } from "@/components/ui/data-table";
-import { columns, subscriptions } from "./subscriptions";
+import { DataTable } from "./data-table";
+import { columns, subscriptions } from "./columns";
 
 const Subscriptions = () => {
   const data = subscriptions;

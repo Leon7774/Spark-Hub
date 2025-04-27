@@ -10,7 +10,12 @@ const config: Config = {
   ],
   darkMode: "class", // or 'media' if you want
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        "background-1": "var(--background-1)",
+        // Add other custom colors if needed
+      },
+    },
   },
   plugins: [animate],
 };

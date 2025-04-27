@@ -27,9 +27,12 @@ export const subscriptions: Subscription[] = [
 export const columns: ColumnDef<Subscription>[] = [
   {
     accessorKey: "id",
-    header: "ID",
-    size: 4,
-    minSize: 0,
+    header: () => <div className="text-center pr-1 bg-gray-100">ID</div>,
+    cell: ({ row }) => (
+      <div className="text-center bg-gray-100">{row.getValue("id")}</div>
+    ),
+    size: 10,
+    minSize: 8,
   },
   {
     accessorKey: "name",
