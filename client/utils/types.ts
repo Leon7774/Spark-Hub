@@ -1,7 +1,7 @@
 // Details of a customer
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type Customer = [
+export type Customer ={
   // Primary Key
   id: number,
   first_name: string,
@@ -9,11 +9,11 @@ export type Customer = [
   created_at: Date,
   total_spent: number,
   total_hours: number
-];
+};
 
 // Details of a subscription plan
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type SubscriptionPlan = [
+export type SubscriptionPlan = {
   // Primary key
   id: number,
   // Name of the subscription plan
@@ -28,7 +28,7 @@ export type SubscriptionPlan = [
   createdAt: Date,
   // Array of branches where the subscription plan is available at
   availableAt: string[]
-];
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type SubscriptionActive = [

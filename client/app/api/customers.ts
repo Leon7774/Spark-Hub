@@ -3,7 +3,6 @@ import { z } from "zod";
 
 const CustomerSchema = z.object({
   id: z.number(),
-  email: z.string().email(),
   created_at: z.string().transform(val => new Date(val)),
   first_name: z.string(),
   last_name: z.string(),
@@ -15,6 +14,8 @@ type Customer = z.infer<typeof CustomerSchema>; // <-- THIS gives you the TS typ
 
 export async function getCustomers(): Promise<Customer[]> {
   const supabase = await createClient();
+
+  console.log(supabase);
 
   const { data, error } = await supabase.from("customers").select("*");
   

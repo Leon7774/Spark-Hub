@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getCustomers } from "@/app/api/customers";
 
 export default async function Page() {
-  const customers = getCustomers()
+  const customers = await getCustomers()
 
   return (
     <div className="container">

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { boolean, z } from "zod";
+import { z } from "zod";
 import { login } from "../api/authentication";
 
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { verifyLogin } from "@/utils/supabase/login";
 import { useState } from "react";
-import { verify } from "crypto";
 
 export interface userCredentials {
   email: string;

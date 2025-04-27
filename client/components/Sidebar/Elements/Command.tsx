@@ -3,16 +3,11 @@
 import { Dispatch, SetStateAction, useEffect } from "react";
 
 import {
-  Calculator,
-  Calendar,
   CreditCard,
   LogIn,
   LogOut,
-  LogOutIcon,
   PenBoxIcon,
-  PlusSquareIcon,
   Settings,
-  Smile,
   User,
   UsersIcon,
 } from "lucide-react";

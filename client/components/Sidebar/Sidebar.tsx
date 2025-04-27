@@ -1,7 +1,6 @@
 import AccountToggle from "./Elements/Account";
 import { Logo } from "./Elements/Logo";
 import { RouteSelect } from "./Elements/Nav-Menu";
-import { Command, CommandDialogDemo } from "./Elements/Command";
 import { Search } from "./Elements/Search";
 
 export const Sidebar = () => {

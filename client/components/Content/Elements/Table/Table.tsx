@@ -280,8 +280,9 @@ export const columns: ColumnDef<Payment>[] = [
         aria-label="Select row"
       />
     ),
-    enableSorting: false,
+    enableSorting: true,
     enableHiding: false,
+    size:20
   },
   {
     accessorKey: "status",
@@ -289,6 +290,7 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("status")}</div>
     ),
+    size:30
   },
   {
     accessorKey: "name",
