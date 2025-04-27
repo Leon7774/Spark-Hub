@@ -1,24 +1,26 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Customer } from "@/utils/types";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { Divide } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 
 export const columns: ColumnDef<Customer>[] = [
   {
     accessorKey: "id",
     header: "ID",
-    size: 2,
+    size: 0,
+    maxSize: 10,
   },
   {
     accessorKey: "first_name",
     header: "First Name",
-    maxSize: 50,
+    size:10,
   },
   {
     accessorKey: "last_name",
@@ -32,37 +34,38 @@ export const columns: ColumnDef<Customer>[] = [
   },
   {
     accessorKey: "total_hours",
-    header: () => <div className="text-right">Amount</div>,
+    header: () => <div className="max-w-[10px]">Total Hours</div>,
+    cell: ({ row }) => <div className="">{row.getValue("total_hours")}</div>,
+    size:0,
+    maxSize:20,
+  },
+  {
+    id: "actions",
     cell: ({ row }) => {
-      <div className="text-right pl-10">{row.getValue("total_hours")}</div>;
+      const payment = row.original
+
+      return (
+        <div className="text-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+              >
+                Copy payment ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>View customer</DropdownMenuItem>
+              <DropdownMenuItem>View payment details</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
     },
   },
-  // {
-  //   id: "actions",
-  //   cell: ({ row }) => {
-  //     const payment = row.original
-
-  //     return (
-  //       <DropdownMenu>
-  //         <DropdownMenuTrigger asChild>
-  //           <Button variant="ghost" className="h-8 w-8 p-0">
-  //             <span className="sr-only">Open menu</span>
-  //             <MoreHorizontal className="h-4 w-4" />
-  //           </Button>
-  //         </DropdownMenuTrigger>
-  //         <DropdownMenuContent align="end">
-  //           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-  //           <DropdownMenuItem
-  //             onClick={() => navigator.clipboard.writeText(payment.id)}
-  //           >
-  //             Copy payment ID
-  //           </DropdownMenuItem>
-  //           <DropdownMenuSeparator />
-  //           <DropdownMenuItem>View customer</DropdownMenuItem>
-  //           <DropdownMenuItem>View payment details</DropdownMenuItem>
-  //         </DropdownMenuContent>
-  //       </DropdownMenu>
-  //     )
-  //   },
-  // },
 ];

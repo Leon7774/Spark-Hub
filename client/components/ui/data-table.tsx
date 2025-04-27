@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -33,7 +34,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="rounded-md border">
-      <Table className="table-fixed">
+      <Table className="table-auto">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -42,7 +43,10 @@ export function DataTable<TData, TValue>({
                   <TableHead
                     key={header.id}
                     style={{ width: header.getSize() }}
-                    className="min-w-0"
+                    className={cn(
+                      "min-w-0",
+                      header.column.id === "id" && "bg-secondary border-r"
+                    )}
                   >
                     {header.isPlaceholder
                       ? null
@@ -67,6 +71,9 @@ export function DataTable<TData, TValue>({
                   <TableCell
                     key={cell.id}
                     style={{ width: cell.column.getSize() }}
+                    className={cn(
+                      cell.column.id === "id" && "bg-secondary border-r"
+                    )}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
