@@ -9,7 +9,7 @@ export const Search = () => {
 
   return (
     <>
-      <div className="group flex items-center rounded-lg border border-accent bg-background-1 p-1 pl-2">
+      <div className="group flex items-center rounded-lg border border-accent bg-background p-1 pl-2">
         <SearchIcon
           strokeWidth={3}
           className="text-gray-500 transition-colors duration-200 group-focus-within:text-black group-hover:text-black"

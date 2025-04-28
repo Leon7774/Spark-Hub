@@ -282,15 +282,29 @@ export const columns: ColumnDef<Payment>[] = [
     ),
     enableSorting: true,
     enableHiding: false,
-    size:20
+    size: 20,
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
-    size:30
+    cell: ({ row }) => {
+      const status = row.getValue("status");
+
+      if (status === "in session") {
+        return (
+          <div className="bg-green-500 w-[80px] p-1 text-center rounded-md">
+            In Session
+          </div>
+        );
+      } else if (status === "offline") {
+        return (
+          <div className="bg-gray-200 w-[80px] p-1 text-center rounded-md">
+            Offline
+          </div>
+        );
+      }
+    },
+    size: 30,
   },
   {
     accessorKey: "name",
