@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { registerCustomer } from "@/app/api/customers";
 
 import {
@@ -53,7 +53,13 @@ const formSchema = z.object({
     }),
 });
 
-export default function RegisterCustomerForm() {
+export default function RegisterCustomerForm({
+  dialogOpen,
+  dialogOpenSet,
+}: {
+  dialogOpen: boolean;
+  dialogOpenSet: Dispatch<SetStateAction<boolean>>;
+}) {
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false); // State for showing dialog
 
@@ -74,12 +80,9 @@ export default function RegisterCustomerForm() {
   async function handleConfirm(values: z.infer<typeof formSchema>) {
     setLoading(true);
     console.log("Trying to register");
-    const { error } = await registerCustomer(
-      values.first_name,
-      values.last_name
-    );
-    if (!error) {
-      toast("Event has been created", {
+    const error = await registerCustomer(values.first_name, values.last_name);
+    if (error === null) {
+      toast(values.first_name + " " + values.last_name + " was registered", {
         description: "Sunday, December 03, 2023 at 9:00 AM",
         action: {
           label: "Undo",
@@ -95,6 +98,7 @@ export default function RegisterCustomerForm() {
         // },
       });
     }
+    dialogOpenSet(false);
     setShowDialog(false);
   }
 
@@ -177,14 +181,14 @@ export default function RegisterCustomerForm() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setShowDialog(false)}>
-                  Cancel
-                </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => handleConfirm(form.getValues())}
                 >
                   Confirm
                 </AlertDialogAction>
+                <AlertDialogCancel onClick={() => setShowDialog(false)}>
+                  Cancel
+                </AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

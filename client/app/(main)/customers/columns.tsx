@@ -19,7 +19,8 @@ export const columns: ColumnDef<Customer>[] = [
   {
     accessorKey: "id",
     header: () => <div className="text-center pr-1.5">ID</div>,
-    size: 10,
+    cell: ({ row }) => <div className="text-center">{row.getValue("id")}</div>,
+    size: 15,
     minSize: 0,
   },
   {

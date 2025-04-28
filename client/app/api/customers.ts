@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
+import { PostgrestError } from "@supabase/supabase-js";
 import { z } from "zod";
 
 const CustomerSchema = z.object({
@@ -24,7 +25,10 @@ export async function getCustomers(): Promise<Customer[]> {
   return customers;
 }
 
-export async function registerCustomer(first_name: string, last_name: string) {
+export async function registerCustomer(
+  first_name: string,
+  last_name: string
+): Promise<PostgrestError | null> {
   const supabase = await createClient();
 
   console.log("Attempting to insert " + first_name);
@@ -37,4 +41,6 @@ export async function registerCustomer(first_name: string, last_name: string) {
   if (error) {
     console.log(error);
   }
+
+  return error;
 }

@@ -23,6 +23,7 @@ export default function Page() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     async function fetchCustomers() {
@@ -37,8 +38,8 @@ export default function Page() {
     <div className="container">
       <h1 className="font-black text-2xl mb-10">Customers</h1>
 
-      <Dialog>
-        <DialogTrigger>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger onClick={() => setOpen(true)}>
           <Button className="mb-2">Register Customer</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
@@ -49,7 +50,10 @@ export default function Page() {
               done.
             </DialogDescription>
           </DialogHeader>
-          <RegisterCustomerForm></RegisterCustomerForm>
+          <RegisterCustomerForm
+            dialogOpen={open}
+            dialogOpenSet={setOpen}
+          ></RegisterCustomerForm>
         </DialogContent>
       </Dialog>
 
