@@ -52,8 +52,29 @@ export const columns: ColumnDef<Customer>[] = [
     accessorKey: "total_hours",
     header: () => <div className="max-w-[10px]">Total Hours</div>,
     cell: ({ row }) => <div className="">{row.getValue("total_hours")}</div>,
-    size: 0,
-    maxSize: 20,
+    size: 40,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue("status");
+
+      if (status === "in session") {
+        return (
+          <div className="bg-green-500 w-[80px] p-1 text-center rounded-md">
+            In Session
+          </div>
+        );
+      } else {
+        return (
+          <div className="bg-gray-200 w-[80px] p-1 text-center rounded-md">
+            Offline
+          </div>
+        );
+      }
+    },
+    size: 30,
   },
   {
     id: "actions",
@@ -78,6 +99,6 @@ export const columns: ColumnDef<Customer>[] = [
         </div>
       );
     },
-    size: 100,
+    size: 50,
   },
 ];

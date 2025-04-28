@@ -108,28 +108,6 @@ export type Payment = {
 
 export const columns: ColumnDef<Payment>[] = [
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status");
-
-      if (status === "in session") {
-        return (
-          <div className="bg-green-500 w-[80px] p-1 text-center rounded-md">
-            In Session
-          </div>
-        );
-      } else if (status === "offline") {
-        return (
-          <div className="bg-gray-200 w-[80px] p-1 text-center rounded-md">
-            Offline
-          </div>
-        );
-      }
-    },
-    size: 30,
-  },
-  {
     accessorKey: "name",
     header: ({ column }) => {
       return (
