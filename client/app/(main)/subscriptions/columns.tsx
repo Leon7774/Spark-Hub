@@ -24,8 +24,6 @@ export const subscriptions: Subscription[] = [
   },
 ];
 
-
-
 export const columns: ColumnDef<Subscription>[] = [
   {
     accessorKey: "id",

@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Customer } from "@/utils/types";
 import {
   DropdownMenu,
@@ -13,37 +18,46 @@ import { MoreHorizontal } from "lucide-react";
 export const columns: ColumnDef<Customer>[] = [
   {
     accessorKey: "id",
-    header: "ID",
-    size: 0,
-    maxSize: 10,
+    header: () => <div className="text-center pr-1.5">ID</div>,
+    size: 10,
+    minSize: 0,
   },
   {
     accessorKey: "first_name",
-    header: "First Name",
-    size:10,
+    header: () => <div className="">First Name</div>,
+    size: 50,
   },
   {
     accessorKey: "last_name",
     header: "Last Name",
-    maxSize: 70,
+    maxSize: 50,
+  },
+  {
+    accessorKey: "created_at",
+    header: "Joined at",
+    size: 70,
+    cell: ({ row }) => {
+      const value = row.getValue("created_at");
+      const date = new Date(value);
+      const formatted = date.toLocaleString(); // or .toLocaleString() if you want time too
+      return <div>{formatted}</div>;
+    },
   },
   {
     accessorKey: "total_spent",
-    header: "Total Spent",
-    maxSize: 20,
+    header: () => <div className="max-w-[10px]">Total Hours</div>,
+    maxSize: 40,
   },
   {
     accessorKey: "total_hours",
     header: () => <div className="max-w-[10px]">Total Hours</div>,
     cell: ({ row }) => <div className="">{row.getValue("total_hours")}</div>,
-    size:0,
-    maxSize:20,
+    size: 0,
+    maxSize: 20,
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const payment = row.original
-
       return (
         <div className="text-right">
           <DropdownMenu>
@@ -55,17 +69,15 @@ export const columns: ColumnDef<Customer>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-              >
-                Copy payment ID
-              </DropdownMenuItem>
+              <DropdownMenuItem>Copy payment ID</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>View customer</DropdownMenuItem>
               <DropdownMenuItem>View payment details</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      )
+      );
     },
+    size: 100,
   },
 ];
