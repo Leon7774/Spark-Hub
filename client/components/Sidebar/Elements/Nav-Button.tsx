@@ -23,8 +23,7 @@ export const RouteButton = ({
         variant={"ghost"}
         className={clsx(
           "w-[100%] hover:bg-gray-300 flex justify-baseline cursor-pointer",
-          route === pathname &&
-            "bg-black text-white hover:bg-black hover:text-white"
+          route === pathname && "bg-accent  hover:bg-black hover:text-white "
         )}
       >
         {children}

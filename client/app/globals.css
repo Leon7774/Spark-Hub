@@ -2,10 +2,11 @@
 @tailwind utilities;
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background-1: oklch(0.98 0 0);
+  --color-background-1: var(--background-1);
+  --color-background-2: var(--background-2);
 
   --radius-sm: calc(var(--radius) - 4px);
 
@@ -145,13 +146,16 @@
 
   --background: oklch(1 0 0);
 
+  --background-1: oklch(0.985 0 0);
+  --background-2: oklch(0.975 0 0);
+
   --foreground: oklch(0.147 0.004 49.25);
 }
 
 .dark {
   --background: oklch(0.147 0.004 49.25);
   --background-1: oklch(0.147 0.004 49.25);
-  --background-2: oklch(0.2 0.004 49.25);
+  --background-2: oklch(0.2 0 40);
 
   --foreground: oklch(0.985 0.001 106.423);
 
@@ -175,7 +179,7 @@
 
   --muted-foreground: oklch(0.709 0.01 56.259);
 
-  --accent: oklch(0.268 0.007 34.298);
+  --accent: oklch(0.4 0 285);
 
   --accent-foreground: oklch(0.985 0.001 106.423);
 
@@ -225,5 +229,7 @@
 
 html,
 body {
+  background: var(--background);
+  color: var(--foreground);
   height: 100%;
 }

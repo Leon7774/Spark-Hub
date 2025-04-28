@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <div
-      className={`${geistSans.variable} ${geistMono.variable}  bg-background-1 dark:bg antialiased grid grid-cols-[200px_1fr] gap-4 p-4`}
+      className={`${geistSans.variable} ${geistMono.variable}  bg-background-2 antialiased grid grid-cols-[200px_1fr] gap-4 p-4`}
       style={{ overscrollBehavior: "none" }}
     >
       <UserProvider>
