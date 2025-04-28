@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTableDemo } from "@/components/Content/Elements/Table/Table";
+import { DataTableDemo } from "./table";
 
 const Sessions = () => {
   return (
