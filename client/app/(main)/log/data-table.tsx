@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  ColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -12,6 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+
 import {
   Table,
   TableBody,
@@ -24,91 +26,15 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-// Type Definitions
-export type SubscriptionPlan = {
-  id: number;
-  name: string;
-  active: boolean;
-  price: number;
-  length: number;
-  createdAt: Date;
-  availableAt: string[];
-};
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+}
 
-export type SubscriptionActive = [
-  id: number,
-  customer_id: number,
-  plan_id: number,
-  expiry: Date,
-  timeLeft: number
-];
-
-// Sample Data
-const subscriptionPlans: SubscriptionPlan[] = [
-  {
-    id: 1,
-    name: "Basic Plan",
-    active: true,
-    price: 350,
-    length: 30,
-    createdAt: new Date("2025-01-01"),
-    availableAt: ["Branch 1", "Branch 2"],
-  },
-  {
-    id: 2,
-    name: "Premium Plan",
-    active: true,
-    price: 650,
-    length: 60,
-    createdAt: new Date("2025-02-01"),
-    availableAt: ["Branch 1"],
-  },
-  {
-    id: 3,
-    name: "VIP Plan",
-    active: false,
-    price: 1200,
-    length: 90,
-    createdAt: new Date("2024-12-01"),
-    availableAt: ["Branch 2"],
-  },
-];
-
-const activeSubscriptions: SubscriptionActive[] = [
-  [1, 101, 1, new Date("2025-02-01"), 10],
-  [2, 102, 2, new Date("2025-03-01"), 30],
-  [3, 103, 1, new Date("2025-04-01"), 60],
-  [4, 104, 2, new Date("2025-03-15"), 15],
-];
-
-// Columns Definition
-const columns = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "customer_id",
-    header: "Customer ID",
-  },
-  {
-    accessorKey: "plan_id",
-    header: "Plan Name",
-    cell: (info: any) =>
-      subscriptionPlans.find((plan) => plan.id === info.getValue())?.name,
-  },
-  {
-    accessorKey: "expiry",
-    header: "Expiry Date",
-    cell: (info: any) => new Date(info.getValue()).toLocaleDateString(),
-  },
-  {
-    accessorKey: "timeLeft",
-    header: "Time Left (days)",
-  },
-];
-
-export function ActiveSubscriptions() {
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -119,7 +45,7 @@ export function ActiveSubscriptions() {
 
   const table = useReactTable({
     columns,
-    data: activeSubscriptions,
+    data,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -141,9 +67,16 @@ export function ActiveSubscriptions() {
       <div className="flex items-center justify-between py-4">
         <div className="flex">
           <Button variant="default" className="mr-5">
-            Add Subscription
+            Add Custom Log
           </Button>
-          <Input placeholder="Filter plan name..." className="max-w-sm" />
+          <Input
+            placeholder="Filter name..."
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("name")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
         </div>
       </div>
       <div className="rounded-md border">
@@ -152,7 +85,14 @@ export function ActiveSubscriptions() {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className={cn("min-w-0")}>
+                  <TableHead
+                    key={header.id}
+                    style={{ width: header.getSize() }}
+                    className={cn(
+                      "min-w-0",
+                      header.column.id === "id" && "bg-secondary border-r"
+                    )}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -167,10 +107,14 @@ export function ActiveSubscriptions() {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
+                      style={{ width: cell.column.getSize() }}
                       className={cn(
                         cell.column.id === "id" && "bg-secondary border-r"
                       )}
@@ -189,24 +133,29 @@ export function ActiveSubscriptions() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No active subscriptions.
+                  No results.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground text-sm">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {table.getPageCount()}
+      <div className="flex items-center justify-between py-4 text-sm text-muted-foreground">
+        <div>
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="space-x-2">
+        <div className="flex items-center space-x-2">
+          <span>
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
+          </span>
           <Button
             variant="default"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            className="transition-colors"
           >
             Previous
           </Button>
@@ -215,6 +164,7 @@ export function ActiveSubscriptions() {
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            className="transition-colors"
           >
             Next
           </Button>

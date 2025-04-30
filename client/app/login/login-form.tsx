@@ -35,6 +35,7 @@ const formSchema = z.object({
 
 export default function ProfileForm() {
   const [isLoading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,13 +50,10 @@ export default function ProfileForm() {
     setLoading(true);
     const loginSuccess = await login(values);
     if (loginSuccess === false) {
-      form.setError("password", {
-        type: "manual",
-        message: "Invalid email or password", // <-- show this!
-      });
       form.reset();
       setLoading(false);
       console.log("Login returned false");
+      setShowError(true);
     }
   }
 
@@ -76,42 +74,57 @@ export default function ProfileForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter password"
-                  type="password"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>Enter your password here</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter password"
+                    type="password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>Enter your password here</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div
+            className={
+              showError
+                ? "block w-full justify-center text-center mt-4"
+                : "hidden w-full justify-center text-center mt-4"
+            }
+          >
+            <span className="text-red-500">Wrong Email/Password.</span>
+          </div>
+          <div className="mt-6">
+            <Button type="submit" disabled={isLoading}>
+              Login
+            </Button>
+            {/* </Link> */}
+            <Button
+              className="ml-4"
+              type="reset"
+              variant={"outline"}
+              disabled={isLoading}
+              onClick={() => {
+                form.reset();
+                setShowError(false);
+              }}
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+
         {/* <Link
           href={"/sessions"}
         > */}
-        <Button type="submit" disabled={isLoading}>
-          Login
-        </Button>
-        {/* </Link> */}
-        <Button
-          className="ml-4"
-          type="reset"
-          variant={"outline"}
-          disabled={isLoading}
-          onClick={() => {
-            form.reset();
-          }}
-        >
-          Clear
-        </Button>
       </form>
     </Form>
   );
