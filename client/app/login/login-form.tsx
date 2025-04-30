@@ -47,7 +47,16 @@ export default function ProfileForm() {
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    login(values);
+    const loginSuccess = await login(values);
+    if (loginSuccess === false) {
+      form.setError("password", {
+        type: "manual",
+        message: "Invalid email or password", // <-- show this!
+      });
+      form.reset();
+      setLoading(false);
+      console.log("Login returned false");
+    }
   }
 
   return (

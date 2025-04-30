@@ -9,7 +9,7 @@ import { RouteButton } from "./Nav-Button";
 
 export const RouteSelect = () => {
   return (
-    <div className="mt-6 flex flex-col justify-center gap-5">
+    <div className="mt-6 flex flex-col justify-center gap-4">
       {/* Button for sessions */}
       <RouteButton route="/sessions" routeText="Sessions">
         <SquareChartGantt strokeWidth={2} className="mr-2 size-6" />

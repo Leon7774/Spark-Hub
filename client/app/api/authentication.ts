@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { userCredentials } from "../login/login-form";
 
-export async function login(formData: userCredentials) {
+export async function login(formData: userCredentials): Promise<boolean> {
   const supabase = await createClient();
   console.log(supabase);
 
@@ -23,11 +23,13 @@ export async function login(formData: userCredentials) {
 
   if (error) {
     console.log("Oops, something went wrong!");
-    redirect("/error");
+    return false;
   }
 
   revalidatePath("/", "layout");
   redirect("/sessions");
+
+  return true;
 }
 
 export async function signup(formData: FormData) {
@@ -54,7 +56,7 @@ export async function signup(formData: FormData) {
 export async function logout() {
   const supabase = await createClient();
   const { error } = await supabase.auth.signOut();
-  if(error){
+  if (error) {
     console.log(error);
   }
   redirect("/");
