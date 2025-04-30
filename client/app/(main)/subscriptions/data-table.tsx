@@ -35,13 +35,14 @@ export type SubscriptionPlan = {
   availableAt: string[];
 };
 
-export type SubscriptionActive = [
-  id: number,
-  customer_id: number,
-  plan_id: number,
-  expiry: Date,
-  timeLeft: number
-];
+// Changed to use an interface instead of a tuple type for better type safety
+export interface SubscriptionActive {
+  id: number;
+  customer_id: number;
+  plan_id: number;
+  expiry: string; // Store date as string in ISO format
+  timeLeft: number;
+}
 
 // Sample Data
 const subscriptionPlans: SubscriptionPlan[] = [
@@ -74,11 +75,36 @@ const subscriptionPlans: SubscriptionPlan[] = [
   },
 ];
 
+// Modified to use objects instead of arrays for better type safety
 const activeSubscriptions: SubscriptionActive[] = [
-  [1, 101, 1, new Date("2025-02-01"), 10],
-  [2, 102, 2, new Date("2025-03-01"), 30],
-  [3, 103, 1, new Date("2025-04-01"), 60],
-  [4, 104, 2, new Date("2025-03-15"), 15],
+  {
+    id: 1,
+    customer_id: 101,
+    plan_id: 1,
+    expiry: "2025-02-01",
+    timeLeft: 10,
+  },
+  {
+    id: 2,
+    customer_id: 102,
+    plan_id: 2,
+    expiry: "2025-03-01",
+    timeLeft: 30,
+  },
+  {
+    id: 3,
+    customer_id: 103,
+    plan_id: 1,
+    expiry: "2025-04-01",
+    timeLeft: 60,
+  },
+  {
+    id: 4,
+    customer_id: 104,
+    plan_id: 2,
+    expiry: "2025-03-15",
+    timeLeft: 15,
+  },
 ];
 
 // Columns Definition
@@ -100,7 +126,14 @@ const columns = [
   {
     accessorKey: "expiry",
     header: "Expiry Date",
-    cell: (info: any) => new Date(info.getValue()).toLocaleDateString(),
+    cell: (info: any) => {
+      try {
+        const expiryDate = new Date(info.getValue());
+        return expiryDate.toLocaleDateString();
+      } catch (error) {
+        return "Invalid Date";
+      }
+    },
   },
   {
     accessorKey: "timeLeft",
@@ -116,6 +149,18 @@ export function ActiveSubscriptions() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+
+  // Add state for plan name filter
+  const [planNameFilter, setPlanNameFilter] = React.useState("");
+
+  // Apply filter when planNameFilter changes
+  React.useEffect(() => {
+    if (planNameFilter) {
+      table.getColumn("plan_id")?.setFilterValue(planNameFilter);
+    } else {
+      table.getColumn("plan_id")?.setFilterValue("");
+    }
+  }, [planNameFilter]);
 
   const table = useReactTable({
     columns,
@@ -143,7 +188,12 @@ export function ActiveSubscriptions() {
           <Button variant="default" className="mr-5">
             Add Subscription
           </Button>
-          <Input placeholder="Filter plan name..." className="max-w-sm" />
+          <Input
+            placeholder="Filter plan name..."
+            className="max-w-sm"
+            value={planNameFilter}
+            onChange={(e) => setPlanNameFilter(e.target.value)}
+          />
         </div>
       </div>
       <div className="rounded-md border">

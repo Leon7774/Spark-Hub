@@ -2,15 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 
 type LogEntry = {
   id: number;
@@ -23,13 +26,13 @@ export const subscriptions: LogEntry[] = [
   {
     id: 1,
     date: "9:15AM at 4/20/2025",
-    staff: "Alex Cruz",
+    staff: "Jeff Pausal",
     action: "Register Customer",
   },
   {
     id: 2,
     date: "11:30AM at 4/21/2025",
-    staff: "Maria Lopez",
+    staff: "Rona Arbe Limbago",
     action: "Add New Plan",
   },
   {
@@ -41,68 +44,68 @@ export const subscriptions: LogEntry[] = [
   {
     id: 4,
     date: "4:05PM at 4/22/2025",
-    staff: "Ella Reyes",
+    staff: "Carla Leduna",
     action: "Register Customer",
   },
   {
     id: 5,
     date: "6:20PM at 4/23/2025",
-    staff: "Rico Santos",
+    staff: "John Renan Labay",
     action: "Update Plan Details",
   },
   {
     id: 6,
     date: "8:50AM at 4/24/2025",
-    staff: "Maria Lopez",
+    staff: "John Renan Labay",
     action: "Checkout Customer",
   },
   { id: 7, date: "10:10AM at 4/24/2025", staff: "Alex Cruz", action: "Login" },
   {
     id: 8,
     date: "12:00PM at 4/25/2025",
-    staff: "Ella Reyes",
+    staff: "John Renan Labay",
     action: "Logout",
   },
   {
     id: 9,
     date: "3:30PM at 4/26/2025",
-    staff: "Rico Santos",
+    staff: "John Renan Labay",
     action: "View Report",
   },
   {
     id: 10,
     date: "5:45PM at 4/27/2025",
-    staff: "John Tan",
+    staff: "John Renan Labay",
     action: "Register Customer",
   },
   {
     id: 11,
     date: "1:15PM at 4/28/2025",
-    staff: "Maria Lopez",
+    staff: "Rona Arbe Limbago",
     action: "Add New Plan",
   },
   {
     id: 12,
     date: "9:00AM at 4/29/2025",
-    staff: "Ella Reyes",
+    staff: "imissherbro",
     action: "Delete Plan",
   },
   {
     id: 13,
     date: "11:20AM at 4/29/2025",
-    staff: "Alex Cruz",
+    staff: "John Cena",
     action: "Change Password",
   },
   {
     id: 14,
     date: "3:00PM at 4/30/2025",
-    staff: "Rico Santos",
+    staff: "El Hombre",
     action: "Checkout Customer",
   },
   {
     id: 15,
     date: "6:40PM at 4/30/2025",
-    staff: "John Tan",
+    staff: "RAHHHHHHHH",
     action: "Register Customer",
   },
 ];
@@ -117,6 +120,7 @@ export const columns: ColumnDef<LogEntry>[] = [
     size: 10,
     minSize: 8,
   },
+
   {
     accessorKey: "date",
     header: "Date",

@@ -12,6 +12,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  TableOptions,
 } from "@tanstack/react-table";
 
 import {
@@ -42,6 +43,14 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [globalFilter, setGlobalFilter] = React.useState<string>("");
+
+  // Global filter function
+  const globalFilterFn = (row: any, columnId: string, value: string) => {
+    return row
+      .getAllCells()
+      .some((cell) => String(cell.getValue()).toLowerCase().includes(value));
+  };
 
   const table = useReactTable({
     columns,
@@ -54,6 +63,7 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn, // Apply global filter across all columns
     state: {
       sorting,
       columnFilters,
@@ -61,6 +71,12 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
   });
+
+  const handleGlobalFilterChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setGlobalFilter(event.target.value);
+  };
 
   return (
     <div className="w-full">
@@ -70,11 +86,9 @@ export function DataTable<TData, TValue>({
             Add Custom Log
           </Button>
           <Input
-            placeholder="Filter name..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
+            placeholder="Filter by anything..."
+            value={globalFilter}
+            onChange={handleGlobalFilterChange}
             className="max-w-sm"
           />
         </div>
