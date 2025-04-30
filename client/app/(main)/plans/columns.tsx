@@ -13,7 +13,7 @@ export const subscriptions: Subscription[] = [
   {
     id: 5,
     name: "Plan350",
-    price: 500,
+    price: 350,
     active: true,
   },
   {
@@ -27,34 +27,46 @@ export const subscriptions: Subscription[] = [
 export const columns: ColumnDef<Subscription>[] = [
   {
     accessorKey: "id",
-    header: () => <div className="text-center pr-1 bg-gray-100">ID</div>,
+    header: "ID",
     cell: ({ row }) => (
-      <div className="text-center bg-gray-100">{row.getValue("id")}</div>
+      <div className="text-center font-mono text-xs">{row.getValue("id")}</div>
     ),
-    size: 10,
-    minSize: 8,
   },
   {
     accessorKey: "name",
-    header: "Name",
-    size: 0,
+    header: "Plan Name",
+    cell: ({ row }) => (
+      <div className="font-semibold">{row.getValue("name")}</div>
+    ),
   },
   {
     accessorKey: "price",
-    header: () => <div className="text-right">Amount</div>,
+    header: "Price",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("price"));
-      const formatted = new Intl.NumberFormat("en-US", {
+      const price = row.getValue("price") as number; // 👈 tell TypeScript this is a number
+      const formatted = new Intl.NumberFormat("en-PH", {
         style: "currency",
         currency: "PHP",
-      }).format(amount);
+      }).format(price);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <div className="text-right">{formatted}</div>;
     },
-    size: 400,
   },
+
   {
     accessorKey: "active",
     header: "Active",
+    cell: ({ row }) => {
+      const active = row.getValue("active");
+      return (
+        <span
+          className={
+            active ? "text-green-600 font-bold" : "text-gray-400 italic"
+          }
+        >
+          {active ? "Yes" : "No"}
+        </span>
+      );
+    },
   },
 ];

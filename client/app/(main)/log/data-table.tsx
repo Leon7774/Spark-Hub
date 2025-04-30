@@ -26,6 +26,15 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import RegisterCustomerForm from "./register_log";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -44,6 +53,7 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState<string>("");
+  const [open, setOpen] = React.useState(false);
 
   // Global filter function
   const globalFilterFn = (row: any, columnId: string, value: string) => {
@@ -81,10 +91,24 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <div className="flex">
-          <Button variant="default" className="mr-5">
-            Add Custom Log
-          </Button>
+        <div className="flex gap-4">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger onClick={() => setOpen(true)}>
+              <Button className="mb-2">Create Custom Log</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader className="pt-5">
+                <DialogTitle>Create Custom Log</DialogTitle>
+                <DialogDescription>
+                  Make a custom log here. Enter the action details.
+                </DialogDescription>
+              </DialogHeader>
+              <RegisterCustomerForm
+                dialogOpen={open}
+                dialogOpenSet={setOpen}
+              ></RegisterCustomerForm>
+            </DialogContent>
+          </Dialog>
           <Input
             placeholder="Filter by anything..."
             value={globalFilter}

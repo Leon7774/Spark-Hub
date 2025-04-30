@@ -48,7 +48,7 @@ export interface SubscriptionActive {
 const subscriptionPlans: SubscriptionPlan[] = [
   {
     id: 1,
-    name: "Basic Plan",
+    name: "Plan 350",
     active: true,
     price: 350,
     length: 30,
@@ -57,7 +57,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
   },
   {
     id: 2,
-    name: "Premium Plan",
+    name: "Weekly Plan",
     active: true,
     price: 650,
     length: 60,
@@ -66,7 +66,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
   },
   {
     id: 3,
-    name: "VIP Plan",
+    name: "It's Sparkling Time",
     active: false,
     price: 1200,
     length: 90,
@@ -102,6 +102,13 @@ const activeSubscriptions: SubscriptionActive[] = [
     id: 4,
     customer_id: 104,
     plan_id: 2,
+    expiry: "2025-03-15",
+    timeLeft: 15,
+  },
+  {
+    id: 5,
+    customer_id: 104,
+    plan_id: 3,
     expiry: "2025-03-15",
     timeLeft: 15,
   },

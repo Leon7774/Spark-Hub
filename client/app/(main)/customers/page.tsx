@@ -36,26 +36,28 @@ export default function Page() {
 
   return (
     <div className="container">
-      <h1 className="font-black text-2xl mb-10">Customers</h1>
+      <h1 className="text-4xl font-black mb-4">Customers</h1>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger onClick={() => setOpen(true)}>
-          <Button className="mb-2">Register Customer</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader className="pt-5">
-            <DialogTitle>Register Customer</DialogTitle>
-            <DialogDescription>
-              Register a new Spark-Lab customer here. Click save when you're
-              done.
-            </DialogDescription>
-          </DialogHeader>
-          <RegisterCustomerForm
-            dialogOpen={open}
-            dialogOpenSet={setOpen}
-          ></RegisterCustomerForm>
-        </DialogContent>
-      </Dialog>
+      <div className="mb-2">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger onClick={() => setOpen(true)}>
+            <Button className="mb-2">Register Customer</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader className="pt-5">
+              <DialogTitle>Register Customer</DialogTitle>
+              <DialogDescription>
+                Register a new Spark-Lab customer here. Click save when you're
+                done.
+              </DialogDescription>
+            </DialogHeader>
+            <RegisterCustomerForm
+              dialogOpen={open}
+              dialogOpenSet={setOpen}
+            ></RegisterCustomerForm>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <DataTable columns={columns} data={customers} />
     </div>
