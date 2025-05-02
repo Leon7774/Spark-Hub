@@ -103,7 +103,7 @@ export const subscriptions: LogEntry[] = [
     action: "Checkout Customer",
   },
   {
-    id: 15,
+    id: 1105,
     date: "6:40PM at 4/30/2025",
     staff: "RAHHHHHHHH",
     action: "Register Customer",
@@ -117,8 +117,8 @@ export const columns: ColumnDef<LogEntry>[] = [
     cell: ({ row }) => (
       <div className="text-center bg-gray-100">{row.getValue("id")}</div>
     ),
-    size: 10,
-    minSize: 8,
+    size: 5,
+    minSize: 0,
   },
 
   {

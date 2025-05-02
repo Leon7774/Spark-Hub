@@ -209,7 +209,13 @@ export function ActiveSubscriptions() {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className={cn("min-w-0")}>
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      "min-w-0",
+                      header.column.id === "id" && "bg-secondary border-r"
+                    )}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(

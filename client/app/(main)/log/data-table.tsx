@@ -26,15 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import RegisterCustomerForm from "./register_log";
+import RegisterButton from "./register-button";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -53,7 +45,6 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState<string>("");
-  const [open, setOpen] = React.useState(false);
 
   // Global filter function
   const globalFilterFn = (row: any, columnId: string, value: string) => {
@@ -90,32 +81,14 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between py-4">
-        <div className="flex gap-4">
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger onClick={() => setOpen(true)}>
-              <Button className="mb-2">Create Custom Log</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader className="pt-5">
-                <DialogTitle>Create Custom Log</DialogTitle>
-                <DialogDescription>
-                  Make a custom log here. Enter the action details.
-                </DialogDescription>
-              </DialogHeader>
-              <RegisterCustomerForm
-                dialogOpen={open}
-                dialogOpenSet={setOpen}
-              ></RegisterCustomerForm>
-            </DialogContent>
-          </Dialog>
-          <Input
-            placeholder="Filter by anything..."
-            value={globalFilter}
-            onChange={handleGlobalFilterChange}
-            className="max-w-sm"
-          />
-        </div>
+      <div className="flex gap-2 mb-2">
+        <RegisterButton></RegisterButton>
+        <Input
+          placeholder="Filter by anything..."
+          value={globalFilter}
+          onChange={handleGlobalFilterChange}
+          className="max-w-sm"
+        />
       </div>
       <div className="rounded-md border">
         <Table className="table-auto">
@@ -128,7 +101,8 @@ export function DataTable<TData, TValue>({
                     style={{ width: header.getSize() }}
                     className={cn(
                       "min-w-0",
-                      header.column.id === "id" && "bg-secondary border-r"
+                      header.column.id === "id" &&
+                        "bg-secondary border-r w-[0px]"
                     )}
                   >
                     {header.isPlaceholder
@@ -152,9 +126,10 @@ export function DataTable<TData, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      style={{ width: cell.column.getSize() }}
+                      style={{ width: cell.column.getSize(), margin: 0 }}
                       className={cn(
-                        cell.column.id === "id" && "bg-secondary border-r"
+                        cell.column.id === "id" &&
+                          "bg-secondary border-r w-[0px]"
                       )}
                     >
                       {flexRender(
