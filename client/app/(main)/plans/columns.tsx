@@ -1,6 +1,16 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
 
 export type Subscription = {
   id: number;
@@ -27,12 +37,12 @@ export const subscriptions: Subscription[] = [
 export const columns: ColumnDef<Subscription>[] = [
   {
     accessorKey: "id",
-    header: () => <div className="text-center pr-1 bg-gray-100">ID</div>,
+    header: () => <div className="text-center pl-0.5 bg-gray-100">ID</div>,
     cell: ({ row }) => (
       <div className="text-center bg-gray-100">{row.getValue("id")}</div>
     ),
-    size: 10,
-    minSize: 8,
+    size: 5,
+    minSize: 0,
   },
   {
     accessorKey: "name",
@@ -68,6 +78,30 @@ export const columns: ColumnDef<Subscription>[] = [
         >
           {active ? "Yes" : "No"}
         </span>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      return (
+        <div className="text-right ">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 mr-4">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-2 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem>Copy payment ID</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>View customer</DropdownMenuItem>
+              <DropdownMenuItem>View payment details</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       );
     },
   },

@@ -13,7 +13,6 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { useState } from "react";
 
 type LogEntry = {
   id: number;
@@ -113,25 +112,11 @@ export const subscriptions: LogEntry[] = [
 export const columns: ColumnDef<LogEntry>[] = [
   {
     accessorKey: "id",
-    header: () => <div className="text-center pr-1 bg-gray-100">ID</div>,
+    header: () => <div className="text-center pl-0.5 bg-gray-100 p-0">ID</div>,
     cell: ({ row }) => (
       <div className="text-center bg-gray-100">{row.getValue("id")}</div>
     ),
     size: 5,
-    minSize: 0,
-  },
-
-  {
-    accessorKey: "date",
-    header: "Date",
-    cell: ({ row }) => <div className="text-left">{row.getValue("date")}</div>,
-    size: 150,
-  },
-  {
-    accessorKey: "staff",
-    header: "Staff",
-    cell: ({ row }) => <div className="text-left">{row.getValue("staff")}</div>,
-    size: 150,
   },
   {
     accessorKey: "action",
@@ -139,7 +124,16 @@ export const columns: ColumnDef<LogEntry>[] = [
     cell: ({ row }) => (
       <div className="text-left font-medium">{row.getValue("action")}</div>
     ),
-    size: 200,
+  },
+  {
+    accessorKey: "date",
+    header: "Date",
+    cell: ({ row }) => <div className="text-left">{row.getValue("date")}</div>,
+  },
+  {
+    accessorKey: "staff",
+    header: "Staff",
+    cell: ({ row }) => <div className="text-left">{row.getValue("staff")}</div>,
   },
   {
     id: "actions",
@@ -148,9 +142,9 @@ export const columns: ColumnDef<LogEntry>[] = [
         <div className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-full w-8 p-0">
                 <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-2 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -164,6 +158,5 @@ export const columns: ColumnDef<LogEntry>[] = [
         </div>
       );
     },
-    size: 50,
   },
 ];

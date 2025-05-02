@@ -1,33 +1,35 @@
 // Details of a customer
 
+import { ColumnDef } from "@tanstack/react-table";
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type Customer ={
+export type Customer = {
   // Primary Key
-  id: number,
-  first_name: string,
-  last_name: string,
-  created_at: Date,
-  total_spent: number,
-  total_hours: number
+  id: number;
+  first_name: string;
+  last_name: string;
+  created_at: Date;
+  total_spent: number;
+  total_hours: number;
 };
 
 // Details of a subscription plan
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type SubscriptionPlan = {
   // Primary key
-  id: number,
+  id: number;
   // Name of the subscription plan
-  name: string,
+  name: string;
   // Status of the subscription plan, whether it is still being sold or not
-  active: boolean,
+  active: boolean;
   // Price to avail the subscription plan
-  price: number,
+  price: number;
   // Longevity of the subscription plan in days)
-  length: number,
+  length: number;
   //
-  createdAt: Date,
+  createdAt: Date;
   // Array of branches where the subscription plan is available at
-  availableAt: string[]
+  availableAt: string[];
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -73,3 +75,8 @@ export const Action = [
 ] as const;
 
 type Action = (typeof Action)[number];
+
+export interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+}

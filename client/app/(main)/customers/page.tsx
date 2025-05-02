@@ -35,7 +35,7 @@ export default function Page() {
 
   return (
     <div className="container">
-      <h1 className="text-4xl font-black mb-4">Customers</h1>
+      <h1 className="text-4xl font-black mb-8">Customers</h1>
 
       <div className="mb-2">
         <Dialog open={open} onOpenChange={setOpen}>

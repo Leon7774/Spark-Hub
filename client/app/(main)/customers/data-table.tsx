@@ -70,9 +70,14 @@ export function DataTable<TData, TValue>({
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    style={{ width: cell.column.getSize() }}
+                    style={{
+                      // This doesn't work. Not sure why.
+                      width: cell.column.getSize(),
+                      paddingBlock: 2,
+                      // paddingInline
+                    }}
                     className={cn(
-                      cell.column.id === "id" && "bg-secondary border-r"
+                      cell.column.id === "id" && "bg-secondary border-r p-0"
                     )}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

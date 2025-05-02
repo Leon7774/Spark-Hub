@@ -6,34 +6,23 @@ import {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  TableOptions,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import RegisterButton from "./register-button";
+import BaseTable from "@/components/ui/base-table";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function LogTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -44,14 +33,11 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [globalFilter, setGlobalFilter] = React.useState<string>("");
-
-  // Global filter function
-  const globalFilterFn = (row: any, columnId: string, value: string) => {
-    return row
-      .getAllCells()
-      .some((cell) => String(cell.getValue()).toLowerCase().includes(value));
-  };
+  // Pagination
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 20, // 👈 change this to your desired default
+  });
 
   const table = useReactTable({
     columns,
@@ -59,105 +45,39 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination, // 👈 add this
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn, // Apply global filter across all columns
+
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination: {
+        pageIndex: 0,
+        pageSize: 30, // 👈 change this number
+      },
     },
   });
 
-  const handleGlobalFilterChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setGlobalFilter(event.target.value);
-  };
-
   return (
     <div className="w-full">
-      <div className="flex gap-2 mb-2">
+      <div className="flex gap-2 mb-4">
         <RegisterButton></RegisterButton>
-        <Input
+        {/* <Input
           placeholder="Filter by anything..."
           value={globalFilter}
-          onChange={handleGlobalFilterChange}
           className="max-w-sm"
-        />
+        /> */}
       </div>
       <div className="rounded-md border">
-        <Table className="table-auto">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    style={{ width: header.getSize() }}
-                    className={cn(
-                      "min-w-0",
-                      header.column.id === "id" &&
-                        "bg-secondary border-r w-[0px]"
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{ width: cell.column.getSize(), margin: 0 }}
-                      className={cn(
-                        cell.column.id === "id" &&
-                          "bg-secondary border-r w-[0px]"
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <BaseTable<TData> table={table}></BaseTable>
       </div>
-      <div className="flex items-center justify-between py-4 text-sm text-muted-foreground">
-        <div>
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+      <div className="flex items-center justify-end py-4 text-sm text-muted-foreground">
         <div className="flex items-center space-x-2">
           <span>
             Page {table.getState().pagination.pageIndex + 1} of{" "}

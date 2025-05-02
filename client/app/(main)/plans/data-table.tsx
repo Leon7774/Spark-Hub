@@ -25,7 +25,10 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import RegisterButton from "./register-button";
+import BaseTable from "@/components/ui/base-table";
+import { Subscription } from "./columns";
+// Return when add log register
+// import RegisterButton from "./register-button";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -81,7 +84,11 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full">
       <div className="flex gap-2 mb-2">
-        <RegisterButton></RegisterButton>
+        {/* ADD REGISTER LATER */}
+        {/* <RegisterButton></RegisterButton> */}
+        <Button variant="default" className="mr-2 mb-2">
+          Add Subscription Plan
+        </Button>
         <Input
           placeholder="Filter by anything..."
           value={globalFilter}
@@ -90,67 +97,7 @@ export function DataTable<TData, TValue>({
         />
       </div>
       <div className="rounded-md border">
-        <Table className="table-auto">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    style={{ width: header.getSize() }}
-                    className={cn(
-                      "min-w-0",
-                      header.column.id === "id" &&
-                        "bg-secondary border-r w-[0px]"
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{ width: cell.column.getSize(), margin: 0 }}
-                      className={cn(
-                        cell.column.id === "id" &&
-                          "bg-secondary border-r w-[0px]"
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <BaseTable<TData> table={table} padding={4}></BaseTable>
       </div>
       <div className="flex items-center justify-between py-4 text-sm text-muted-foreground">
         <div>

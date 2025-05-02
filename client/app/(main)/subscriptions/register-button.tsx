@@ -17,10 +17,9 @@ export const RegisterButton = () => {
     <div className="flex items-center justify-between">
       <div className="flex gap-4">
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>Create Custom Log</Button>
+          <DialogTrigger onClick={() => setOpen(true)}>
+            <Button className="mb-2">Create Custom Log</Button>
           </DialogTrigger>
-
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader className="pt-5">
               <DialogTitle>Create Custom Log</DialogTitle>
