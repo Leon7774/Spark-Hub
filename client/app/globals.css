@@ -43,6 +43,7 @@
   --color-muted-foreground: var(--muted-foreground);
 
   --color-accent: var(--accent);
+  --color-accent2: var(--accent2);
 
   --color-accent-foreground: var(--accent-foreground);
 
@@ -107,6 +108,8 @@
   --muted-foreground: oklch(0.553 0.013 58.071);
 
   --accent: oklch(0.94 0.001 106.424);
+
+  --accent2: oklch(0.9 0.001 106.424);
 
   --accent-foreground: oklch(0.216 0.006 56.043);
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { columns } from "./columns";
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
-import { Customer, getCustomers, registerCustomer } from "@/app/api/customers";
+import { Customer, getCustomers } from "@/app/api/customers";
 
 import {
   Dialog,
@@ -14,17 +14,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import RegisterCustomerForm from "./register_customer";
 
 export default function Page() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  // const [firstName, setFirstName] = useState("");
+  // const [lastName, setLastName] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [open, setOpen] = useState(false);
 
+  // Loads
   useEffect(() => {
     async function fetchCustomers() {
       const data = await getCustomers();

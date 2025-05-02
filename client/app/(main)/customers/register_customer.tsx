@@ -83,7 +83,7 @@ export default function RegisterCustomerForm({
     const error = await registerCustomer(values.first_name, values.last_name);
     if (error === null) {
       toast(values.first_name + " " + values.last_name + " was registered", {
-        description: "Sunday, December 03, 2023 at 9:00 AM",
+        description: Date.now(),
         action: {
           label: "Undo",
           onClick: () => console.log("Undo"),
