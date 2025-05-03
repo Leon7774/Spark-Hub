@@ -9,13 +9,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
-import RegisterCustomerForm from "./register_customer";
+import RegisterCustomerForm from "./register-customer";
 
 export default function Page() {
   // const [firstName, setFirstName] = useState("");
@@ -46,8 +45,8 @@ export default function Page() {
             <DialogHeader className="pt-5">
               <DialogTitle>Register Customer</DialogTitle>
               <DialogDescription>
-                Register a new Spark-Lab customer here. Click save when you're
-                done.
+                Register a new Spark-Lab customer here. Click save when
+                you&apos;re done.
               </DialogDescription>
             </DialogHeader>
             <RegisterCustomerForm

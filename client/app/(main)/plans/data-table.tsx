@@ -6,7 +6,6 @@ import {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -14,21 +13,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import BaseTable from "@/components/ui/base-table";
-import { Subscription } from "./columns";
-// Return when add log register
-// import RegisterButton from "./register-button";
+import RegisterButton from "./register-button";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -48,13 +36,6 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState<string>("");
 
-  // Global filter function
-  const globalFilterFn = (row: any, columnId: string, value: string) => {
-    return row
-      .getAllCells()
-      .some((cell) => String(cell.getValue()).toLowerCase().includes(value));
-  };
-
   const table = useReactTable({
     columns,
     data,
@@ -66,7 +47,6 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn, // Apply global filter across all columns
     state: {
       sorting,
       columnFilters,
@@ -84,11 +64,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full">
       <div className="flex gap-2 mb-2">
-        {/* ADD REGISTER LATER */}
-        {/* <RegisterButton></RegisterButton> */}
-        <Button variant="default" className="mr-2 mb-2">
-          Add Subscription Plan
-        </Button>
+        <RegisterButton></RegisterButton>
         <Input
           placeholder="Filter by anything..."
           value={globalFilter}

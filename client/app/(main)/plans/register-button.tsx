@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import RegisterCustomerForm from "./register_plan";
+import RegisterPlanForm from "./register-plan";
 
 export const RegisterButton = () => {
   const [open, setOpen] = useState(false);
@@ -17,7 +17,7 @@ export const RegisterButton = () => {
     <div className="flex items-center justify-between">
       <div className="flex gap-4">
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild onClick={() => setOpen(true)}>
+          <DialogTrigger asChild>
             <Button className="mb-2">Create Custom Log</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
@@ -27,10 +27,10 @@ export const RegisterButton = () => {
                 Make a custom log here. Enter the action details.
               </DialogDescription>
             </DialogHeader>
-            <RegisterCustomerForm
+            <RegisterPlanForm
               dialogOpen={open}
               dialogOpenSet={setOpen}
-            ></RegisterCustomerForm>
+            ></RegisterPlanForm>
           </DialogContent>
         </Dialog>
       </div>

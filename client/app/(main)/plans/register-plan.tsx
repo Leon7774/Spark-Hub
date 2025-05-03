@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Dispatch, SetStateAction, useState } from "react";
-import { registerCustomer } from "@/app/api/customers";
 
 import {
   AlertDialog,
@@ -27,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
@@ -53,8 +50,8 @@ const formSchema = z.object({
     }),
 });
 
-export default function RegisterCustomerForm({
-  dialogOpen,
+export default function RegisterPlanForm({
+  // dialogOpen,
   dialogOpenSet,
 }: {
   dialogOpen: boolean;

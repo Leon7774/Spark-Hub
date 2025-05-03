@@ -75,7 +75,7 @@ export function LogTable<TData, TValue>({
         /> */}
       </div>
       <div className="rounded-md border">
-        <BaseTable<TData> table={table}></BaseTable>
+        <BaseTable<TData> padding={4} table={table}></BaseTable>
       </div>
       <div className="flex items-center justify-end py-4 text-sm text-muted-foreground">
         <div className="flex items-center space-x-2">
