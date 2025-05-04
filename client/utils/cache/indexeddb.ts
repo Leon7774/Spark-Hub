@@ -8,14 +8,17 @@ export async function initDB() {
       if (!db.objectStoreNames.contains("customers")) {
         db.createObjectStore("customers", { keyPath: "id" });
       }
-      if (!db.objectStoreNames.contains("plans")) {
-        db.createObjectStore("plans", { keyPath: "id" });
+      if (!db.objectStoreNames.contains("subscription_plans")) {
+        db.createObjectStore("subscription_plans", { keyPath: "id" });
       }
-      if (!db.objectStoreNames.contains("subscriptions")) {
-        db.createObjectStore("plans", { keyPath: "id" });
+      if (!db.objectStoreNames.contains("active_subscriptions")) {
+        db.createObjectStore("active_subscriptions", { keyPath: "id" });
       }
-      if (!db.objectStoreNames.contains("plans")) {
-        db.createObjectStore("plans", { keyPath: "id" });
+      if (!db.objectStoreNames.contains("sessions")) {
+        db.createObjectStore("sessions", { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains("log")) {
+        db.createObjectStore("log", { keyPath: "id" });
       }
     },
   });

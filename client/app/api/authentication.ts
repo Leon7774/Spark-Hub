@@ -28,8 +28,6 @@ export async function login(formData: userCredentials): Promise<boolean> {
 
   revalidatePath("/", "layout");
   redirect("/sessions");
-
-  return true;
 }
 
 export async function signup(formData: FormData) {

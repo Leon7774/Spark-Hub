@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Dispatch, SetStateAction, useState } from "react";
+import { registerCustomer } from "@/app/api/customers";
 
 import {
   AlertDialog,
@@ -25,9 +27,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { SubscriptionType } from "@/utils/types";
 
 export interface userCredentials {
   email: string;
@@ -35,16 +37,24 @@ export interface userCredentials {
 }
 
 const formSchema = z.object({
-  plan_name: z
+  first_name: z
     .string()
-    .nonempty({ message: "Plan name is empty" })
-    .min(2, { message: "Name is too short" }),
-  plan_type: z.enum(SubscriptionType, { message: "Please choose a plan type" }),
-  hours_included: z.number({ message: "Please enter " }),
+    .nonempty({ message: "First name is empty" })
+    .min(2, { message: "First name is too short" })
+    .refine((value) => isNaN(Number(value)), {
+      message: "Numbers are not allowed here",
+    }),
+  last_name: z
+    .string()
+    .nonempty({ message: "Last name is empty" })
+    .min(2, { message: "Last name is too short" })
+    .refine((value) => isNaN(Number(value)), {
+      message: "Numbers are not allowed here",
+    }),
 });
 
-export default function RegisterPlanForm({
-  // dialogOpen,
+export default function RegisterCustomerForm({
+  dialogOpen,
   dialogOpenSet,
 }: {
   dialogOpen: boolean;
@@ -56,7 +66,8 @@ export default function RegisterPlanForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      plan_name: "",
+      first_name: "",
+      last_name: "",
     },
   });
 
@@ -82,7 +93,7 @@ export default function RegisterPlanForm({
       >
         <FormField
           control={form.control}
-          name="action_details"
+          name="first_name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Action details</FormLabel>
