@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,16 @@ import {
 import { toast } from "sonner";
 import { SubscriptionTypes } from "@/utils/types";
 import { PlanType } from "@/app/api/plans";
+import { Select } from "@/components/ui/select";
+import {
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import clsx from "clsx";
 
 // This is the schema for the Subsription Plans
 export const PlanSubmitSchema = z.object({
@@ -65,7 +75,8 @@ export const PlanSubmitSchema = z.object({
         return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
       },
       { message: "Invalid time value" }
-    ),
+    )
+    .nullable(),
   // OPTIONAL
   // The time a given plan may be subscribed
   time_valid_end: z
@@ -77,7 +88,8 @@ export const PlanSubmitSchema = z.object({
         return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
       },
       { message: "Invalid time value" }
-    ),
+    )
+    .nullable(),
 
   days_included: z
     .number({ message: "Please input a valid number of days" })
@@ -99,6 +111,8 @@ export default function RegisterPlanForm({
   dialogOpen: boolean;
   dialogOpenSet: Dispatch<SetStateAction<boolean>>;
 }) {
+  console.log("registerplanform check");
+
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false); // State for showing dialog
   const [planType, setPlanType] = useState<PlanType | undefined>(undefined);
@@ -157,6 +171,58 @@ export default function RegisterPlanForm({
             </FormItem>
           )}
         />
+
+        <Controller
+          name="plan_type"
+          control={form.control}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="a">A</SelectItem>
+                <SelectItem value="b">B</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
+
+        <div
+          className={clsx(
+            "transition-all duration-300 flex-col gap-8 flex",
+            planType === "straight"
+              ? "opacity-100 max-h-40"
+              : "opacity-0 max-h-0"
+          )}
+        >
+          <FormField
+            control={form.control}
+            name="time_valid_start"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Valid Time Start</FormLabel>
+                <FormControl>
+                  <Input placeholder="Optional"></Input>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="time_valid_end"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Valid Time End</FormLabel>
+                <FormControl>
+                  <Input placeholder="Optional"></Input>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>
