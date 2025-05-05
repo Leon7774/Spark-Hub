@@ -3,13 +3,8 @@
 import * as React from "react";
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -27,60 +22,24 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [globalFilter, setGlobalFilter] = React.useState<string>("");
-
   const table = useReactTable({
     columns,
     data,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
   });
-
-  const handleGlobalFilterChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setGlobalFilter(event.target.value);
-  };
 
   return (
     <div className="w-full">
       <div className="flex gap-2 mb-2">
         <RegisterButton></RegisterButton>
-        <Input
-          placeholder="Filter by anything..."
-          value={globalFilter}
-          onChange={handleGlobalFilterChange}
-          className="max-w-sm"
-        />
+        <Input placeholder="Filter by anything..." className="max-w-sm" />
       </div>
       <div className="rounded-md border">
         <BaseTable<TData> table={table} padding={4}></BaseTable>
       </div>
       <div className="flex items-center justify-between py-4 text-sm text-muted-foreground">
-        <div>
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-end w-full space-x-2">
           <span>
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}

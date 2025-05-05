@@ -2,7 +2,10 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-export const SubscriptionTypes = ["bundle", "straight"];
+export const SubscriptionTypes = ["bundle", "straight", "hourly"] as [
+  string,
+  ...string[]
+];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type Customer = {

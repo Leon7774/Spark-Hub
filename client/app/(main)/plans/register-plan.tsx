@@ -27,21 +27,70 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { SubscriptionType } from "@/utils/types";
+import { SubscriptionTypes } from "@/utils/types";
+import { PlanType } from "@/app/api/plans";
 
-export interface userCredentials {
-  email: string;
-  password: string;
-}
-
-const formSchema = z.object({
+// This is the schema for the Subsription Plans
+export const PlanSubmitSchema = z.object({
+  // The ID of a given subscription plan - only for pulling from DB
+  plan_id: z.number().nullable(),
+  // The date the plan was created - only for pulling from DB
+  created_at: z.date().nullable(),
+  // The name of a subscription plan
   plan_name: z
     .string()
     .nonempty({ message: "Plan name is empty" })
     .min(2, { message: "Name is too short" }),
-  plan_type: z.enum(SubscriptionType, { message: "Please choose a plan type" }),
-  hours_included: z.number({ message: "Please enter " }),
+  // The type of a subscription plan ["Straight" || "Bundle" || "Hourly"]
+  plan_type: z.enum(SubscriptionTypes, {
+    message: "Please choose a valid plan type",
+  }),
+  // OPTIONAL
+  // The time included of a subscription plan in HH:mm format
+  time_included: z.string().regex(/^\d{1,3}:[0-5]\d$/, {
+    message: "Time must be in HH:MM format",
+  }),
+  // The price of a given subscription plan
+  price: z
+    .number({ message: "Please enter " })
+    .min(0, { message: "The plan price cannot be lower than ₱0.00" }),
+  // OPTIONAL
+  // The time a given plan may be subscribed i.e. Night Owl Package (6:00PM - 6:00AM)
+  time_valid_start: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/, { message: "Time must be in HH:MM format" })
+    .refine(
+      (val) => {
+        const [hours, minutes] = val.split(":").map(Number);
+        return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+      },
+      { message: "Invalid time value" }
+    ),
+  // OPTIONAL
+  // The time a given plan may be subscribed
+  time_valid_end: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/, { message: "Time must be in HH:MM format" })
+    .refine(
+      (val) => {
+        const [hours, minutes] = val.split(":").map(Number);
+        return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+      },
+      { message: "Invalid time value" }
+    ),
+
+  days_included: z
+    .number({ message: "Please input a valid number of days" })
+    .min(0, { message: "Please enter a valid number of days" })
+    .nullable(),
+
+  expiry_duration: z
+    .number({ message: "Please input a valid number of days" })
+    .min(0, { message: "Days of validity cannot be less than 0" })
+    .nullable(),
 });
+
+const planFormSchema = PlanSubmitSchema;
 
 export default function RegisterPlanForm({
   // dialogOpen,
@@ -52,11 +101,13 @@ export default function RegisterPlanForm({
 }) {
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false); // State for showing dialog
+  const [planType, setPlanType] = useState<PlanType | undefined>(undefined);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof planFormSchema>>({
+    resolver: zodResolver(planFormSchema),
     defaultValues: {
       plan_name: "",
+      plan_type: "",
     },
   });
 
@@ -66,7 +117,7 @@ export default function RegisterPlanForm({
   }
 
   // 3. Handle the dialog confirmation.
-  async function handleConfirm(values: z.infer<typeof formSchema>) {
+  async function handleConfirm(values: z.infer<typeof planFormSchema>) {
     setLoading(true);
     console.log("Trying to register");
     dialogOpenSet(false);
@@ -82,10 +133,23 @@ export default function RegisterPlanForm({
       >
         <FormField
           control={form.control}
-          name="action_details"
+          name="plan_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Action details</FormLabel>
+              <FormLabel>Plan Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter plan name here"></Input>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Price</FormLabel>
               <FormControl>
                 <Input placeholder="Enter action here"></Input>
               </FormControl>
@@ -93,6 +157,7 @@ export default function RegisterPlanForm({
             </FormItem>
           )}
         />
+
         <div className="flex justify-end">
           <Button type="submit" disabled={isLoading}>
             Register
@@ -130,9 +195,10 @@ export default function RegisterPlanForm({
                   <br />
                   <br />
                   <span className="font-bold">
-                    {form.getValues("first_name") +
+                    {/* Enter check details here! */}
+                    {/* {form.getValues("first_name") +
                       " " +
-                      form.getValues("last_name")}
+                      form.getValues("last_name")} */}
                   </span>
                 </AlertDialogDescription>
               </AlertDialogHeader>
