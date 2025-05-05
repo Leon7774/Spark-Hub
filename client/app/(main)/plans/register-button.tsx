@@ -18,13 +18,13 @@ export const RegisterButton = () => {
       <div className="flex gap-4">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="mb-2">Create Custom Log</Button>
+            <Button className="mb-2">Create Subscription Plan</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader className="pt-5">
-              <DialogTitle>Create Custom Log</DialogTitle>
+              <DialogTitle>Create Subscription Plan</DialogTitle>
               <DialogDescription>
-                Make a custom log here. Enter the action details.
+                Make a subscription plan here. Enter the details below.
               </DialogDescription>
             </DialogHeader>
             <RegisterPlanForm

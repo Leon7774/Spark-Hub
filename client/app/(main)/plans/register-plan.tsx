@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import clsx from "clsx";
 import { Divide, PhilippinePeso } from "lucide-react";
+import { TimePicker12Demo } from "./time-picker";
 
 // This is the schema for the Subsription Plans
 export const PlanSubmitSchema = z.object({
@@ -117,6 +118,8 @@ export default function RegisterPlanForm({
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false); // State for showing dialog
   const [planType, setPlanType] = useState<PlanType | undefined>(undefined);
+  const [timeStart, setTimeStart] = useState<Date | undefined>(undefined);
+  const [timeEnd, setTimeEnd] = useState<Date | undefined>(undefined);
 
   const form = useForm<z.infer<typeof planFormSchema>>({
     resolver: zodResolver(planFormSchema),
@@ -168,7 +171,14 @@ export default function RegisterPlanForm({
                 <FormLabel>
                   <div>
                     <span>Price</span>
-                    <span className="text-xs">&#40;charged hourly&#41;</span>
+                    <span
+                      className={clsx(
+                        "text-[8px] ",
+                        planType === "straight" ? "display" : "hidden"
+                      )}
+                    >
+                      &#40;charged hourly&#41;
+                    </span>
                   </div>
                 </FormLabel>
                 <div className="flex items-center">
@@ -223,26 +233,20 @@ export default function RegisterPlanForm({
             control={form.control}
             name="time_valid_start"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Valid Time Start</FormLabel>
-                <FormControl>
-                  <Input placeholder="Optional"></Input>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <TimePicker12Demo
+                date={timeStart}
+                setDate={setTimeStart}
+              ></TimePicker12Demo>
             )}
           />
           <FormField
             control={form.control}
             name="time_valid_end"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Valid Time End</FormLabel>
-                <FormControl>
-                  <Input placeholder="Optional"></Input>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <TimePicker12Demo
+                date={timeEnd}
+                setDate={setTimeEnd}
+              ></TimePicker12Demo>
             )}
           />
         </div>
@@ -258,7 +262,8 @@ export default function RegisterPlanForm({
             disabled={isLoading}
             onClick={() => {
               form.reset();
-              toast("Log has been created", {
+              setPlanType(undefined);
+              toast("Form has been cleared", {
                 description: "Sunday, December 03, 2023 at 9:00 AM",
                 action: {
                   label: "Undo",
