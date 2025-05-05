@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import clsx from "clsx";
+import { Divide, PhilippinePeso } from "lucide-react";
 
 // This is the schema for the Subsription Plans
 export const PlanSubmitSchema = z.object({
@@ -158,35 +159,57 @@ export default function RegisterPlanForm({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Price</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter action here"></Input>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Controller
-          name="plan_type"
-          control={form.control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an option" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="a">A</SelectItem>
-                <SelectItem value="b">B</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-x-4">
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  <div>
+                    <span>Price</span>
+                    <span className="text-xs">&#40;charged hourly&#41;</span>
+                  </div>
+                </FormLabel>
+                <div className="flex items-center">
+                  <PhilippinePeso
+                    strokeWidth={2.5}
+                    className="mr-1"
+                  ></PhilippinePeso>
+                  <FormControl>
+                    <Input placeholder="250"></Input>
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="plan_type"
+            render={({ field }) => (
+              <div>
+                <FormLabel className="mb-2">Plan Type</FormLabel>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    setPlanType(value as PlanType);
+                  }}
+                  value={field.value}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select an option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bundle">Bundle</SelectItem>
+                    <SelectItem value="straight">Straight</SelectItem>
+                    <SelectItem value="hourly">Hourly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          />
+        </div>
 
         <div
           className={clsx(
@@ -224,12 +247,12 @@ export default function RegisterPlanForm({
           />
         </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
+        <div className="flex justify-end z-10">
+          <Button type="submit" disabled={isLoading} className="z-40">
             Register
           </Button>
           <Button
-            className="ml-4"
+            className="ml-4 z-40"
             type="reset"
             variant={"outline"}
             disabled={isLoading}
