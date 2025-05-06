@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input, InputIcon } from "@/components/ui/input";
 import { Dispatch, SetStateAction, useState } from "react";
 
 import {
@@ -64,7 +64,7 @@ export const PlanSubmitSchema = z.object({
   }),
   // The price of a given subscription plan
   price: z
-    .number({ message: "Please enter " })
+    .number({ message: "Please enter price of plan" })
     .min(0, { message: "The plan price cannot be lower than ₱0.00" }),
   // OPTIONAL
   // The time a given plan may be subscribed i.e. Night Owl Package (6:00PM - 6:00AM)
@@ -168,29 +168,28 @@ export default function RegisterPlanForm({
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  <div>
-                    <span>Price</span>
-                    <span
-                      className={clsx(
-                        "text-[8px] ",
-                        planType === "straight" ? "display" : "hidden"
-                      )}
-                    >
-                      &#40;charged hourly&#41;
-                    </span>
-                  </div>
-                </FormLabel>
-                <div className="flex items-center">
-                  <PhilippinePeso
-                    strokeWidth={2.5}
-                    className="mr-1"
-                  ></PhilippinePeso>
+                <div className="flex flex-col gap-2">
+                  <FormLabel>
+                    <div>
+                      <span className="transition-all">
+                        {planType === "hourly" ? "Hourly Price" : "Price"}
+                      </span>
+                    </div>
+                  </FormLabel>
+
                   <FormControl>
-                    <Input placeholder="250"></Input>
+                    <InputIcon
+                      icon={
+                        <PhilippinePeso
+                          size={15}
+                          strokeWidth={2}
+                          className="text-muted-foreground p-0"
+                        ></PhilippinePeso>
+                      }
+                    ></InputIcon>
                   </FormControl>
+                  <FormMessage />
                 </div>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -198,25 +197,29 @@ export default function RegisterPlanForm({
             control={form.control}
             name="plan_type"
             render={({ field }) => (
-              <div>
-                <FormLabel className="mb-2">Plan Type</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    setPlanType(value as PlanType);
-                  }}
-                  value={field.value}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select an option" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bundle">Bundle</SelectItem>
-                    <SelectItem value="straight">Straight</SelectItem>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <FormItem>
+                <div className="flex flex-col gap-2">
+                  <FormLabel>Plan Type</FormLabel>
+
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      setPlanType(value as PlanType);
+                    }}
+                    value={field.value}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bundle">Bundle</SelectItem>
+                      <SelectItem value="straight">Straight</SelectItem>
+                      <SelectItem value="hourly">Hourly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </div>
+              </FormItem>
             )}
           />
         </div>

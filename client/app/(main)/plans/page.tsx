@@ -7,7 +7,9 @@ import { TimePicker12Demo } from "./time-picker";
 import { Button } from "@/components/ui/button";
 
 const Page = () => {
-  const [date, setDate] = useState<Date | undefined>();
+  const [date, setDate] = useState<Date | undefined>(
+    new Date("1970-01-01T12:00:00")
+  );
 
   return (
     <div>
