@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import RegisterButton from "./register-button";
 
 export function DataTableDemo() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -57,9 +58,7 @@ export function DataTableDemo() {
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <div className="flex">
-          <Button variant={"default"} className=" mr-5">
-            Register Customer
-          </Button>
+          <RegisterButton></RegisterButton>
           <Input
             placeholder="Filter name..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}

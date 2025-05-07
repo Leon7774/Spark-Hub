@@ -32,80 +32,20 @@ import { PlanType } from "@/app/api/plans";
 import { Select } from "@/components/ui/select";
 import {
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import clsx from "clsx";
-import { Divide, PhilippinePeso, Target } from "lucide-react";
-import { TimePicker12Demo } from "./time-picker";
-import { isNumberObject } from "util/types";
+import { PhilippinePeso } from "lucide-react";
 
-// This is the schema for the Subsription Plans
-export const PlanSubmitSchema = z.object({
+// This is the schema for customer sessions
+export const SessionSchema = z.object({
   // The ID of a given subscription plan - only for pulling from DB
   plan_id: z.number().nullable(),
-  // The date the plan was created - only for pulling from DB
-  created_at: z.date().nullable(),
-  // The name of a subscription plan
-  plan_name: z
-    .string()
-    .nonempty({ message: "Plan name is empty" })
-    .min(2, { message: "Name is too short" }),
-  // The type of a subscription plan ["Straight" || "Bundle" || "Hourly"]
-  plan_type: z.enum(SubscriptionTypes, {
-    message: "Please choose a valid plan type",
-  }),
-  // OPTIONAL
-  // The time included of a subscription plan in HH:mm format
-  time_included: z.string().regex(/^\d{1,3}:[0-5]\d$/, {
-    message: "Time must be in HH:MM format",
-  }),
-  // The price of a given subscription plan
-  price: z.coerce
-    .number({ message: "Please enter a valid price" })
-    .gte(0, "Enter valid price"),
-  // OPTIONAL
-  // The time a given plan may be subscribed i.e. Night Owl Package (6:00PM - 6:00AM)
-  time_valid_start: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, { message: "Time must be in HH:MM format" })
-    .refine(
-      (val) => {
-        const [hours, minutes] = val.split(":").map(Number);
-        return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
-      },
-      { message: "Invalid time value" }
-    )
-    .nullable(),
-  // OPTIONAL
-  // The time a given plan may be subscribed
-  time_valid_end: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, { message: "Time must be in HH:MM format" })
-    .refine(
-      (val) => {
-        const [hours, minutes] = val.split(":").map(Number);
-        return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
-      },
-      { message: "Invalid time value" }
-    )
-    .nullable(),
-
-  days_included: z
-    .number({ message: "Please input a valid number of days" })
-    .min(0, { message: "Please enter a valid number of days" })
-    .nullable(),
-
-  expiry_duration: z
-    .number({ message: "Please input a valid number of days" })
-    .min(0, { message: "Days of validity cannot be less than 0" })
-    .nullable(),
 });
 
-const planFormSchema = PlanSubmitSchema;
+const planFormSchema = SessionSchema;
 
 export default function RegisterPlanForm({
   // dialogOpen,
@@ -118,9 +58,6 @@ export default function RegisterPlanForm({
 
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false); // State for showing dialog
-  const [planType, setPlanType] = useState<PlanType | undefined>(undefined);
-  const [timeStart, setTimeStart] = useState<Date | undefined>(undefined);
-  const [timeEnd, setTimeEnd] = useState<Date | undefined>(undefined);
 
   const form = useForm<z.infer<typeof planFormSchema>>({
     resolver: zodResolver(planFormSchema),
@@ -268,7 +205,6 @@ export default function RegisterPlanForm({
             disabled={isLoading}
             onClick={() => {
               form.reset();
-              setPlanType(undefined);
               toast("Form has been cleared", {
                 description: "Sunday, December 03, 2023 at 9:00 AM",
                 action: {
