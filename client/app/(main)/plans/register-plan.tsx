@@ -16,6 +16,8 @@ import {
 import { Input, InputIcon } from "@/components/ui/input";
 import { Dispatch, SetStateAction, useState } from "react";
 
+import { Switch } from "@/components/ui/switch";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,16 +34,13 @@ import { PlanType } from "@/app/api/plans";
 import { Select } from "@/components/ui/select";
 import {
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import clsx from "clsx";
-import { Divide, PhilippinePeso, Target } from "lucide-react";
+import { PhilippinePeso } from "lucide-react";
 import { TimePicker12Demo } from "./time-picker";
-import { isNumberObject } from "util/types";
 
 // This is the schema for the Subsription Plans
 export const PlanSubmitSchema = z.object({
@@ -64,9 +63,12 @@ export const PlanSubmitSchema = z.object({
     message: "Time must be in HH:MM format",
   }),
   // The price of a given subscription plan
-  price: z.coerce
-    .number({ message: "Please enter a valid price" })
-    .gte(0, "Enter valid price"),
+  price: z.coerce.number({ message: "Please enter a valid price" }).refine(
+    (val) => {
+      return val > 0;
+    },
+    { message: "Price cannot be free" }
+  ),
   // OPTIONAL
   // The time a given plan may be subscribed i.e. Night Owl Package (6:00PM - 6:00AM)
   time_valid_start: z
@@ -112,15 +114,22 @@ export default function RegisterPlanForm({
   dialogOpenSet,
 }: {
   dialogOpen: boolean;
+  // Handles the state of this dialog (hidden / shown)
   dialogOpenSet: Dispatch<SetStateAction<boolean>>;
 }) {
   console.log("registerplanform check");
 
+  // Disables the submit button if a server action is ongoing to prevent multiple actions
   const [isLoading, setLoading] = useState(false);
+  // State for showing the alert dialog
   const [showDialog, setShowDialog] = useState(false); // State for showing dialog
+  // The plan type of the current plan - undefined until chosen
   const [planType, setPlanType] = useState<PlanType | undefined>(undefined);
-  const [timeStart, setTimeStart] = useState<Date | undefined>(undefined);
+  // Toggle if the plan is available at a set time
+  const [isLimited, setLimited] = useState<boolean>(false);
+  // The start and end of a plans availability, if isLimited === true
   const [timeEnd, setTimeEnd] = useState<Date | undefined>(undefined);
+  const [timeStart, setTimeStart] = useState<Date | undefined>(undefined);
 
   const form = useForm<z.infer<typeof planFormSchema>>({
     resolver: zodResolver(planFormSchema),
@@ -226,6 +235,10 @@ export default function RegisterPlanForm({
             )}
           />
         </div>
+        <div className="">
+          <span className="text-sm">Only available at a given time</span>
+          <Switch></Switch>
+        </div>
 
         <div
           className={clsx(
@@ -235,26 +248,32 @@ export default function RegisterPlanForm({
               : "opacity-0 max-h-0"
           )}
         >
-          <FormField
-            control={form.control}
-            name="time_valid_start"
-            render={({ field }) => (
-              <TimePicker12Demo
-                date={timeStart}
-                setDate={setTimeStart}
-              ></TimePicker12Demo>
+          <div
+            className={clsx(
+              isLimited === true ? "opacity-100 max-h-40" : "opacity-0 max-h-0"
             )}
-          />
-          <FormField
-            control={form.control}
-            name="time_valid_end"
-            render={({ field }) => (
-              <TimePicker12Demo
-                date={timeEnd}
-                setDate={setTimeEnd}
-              ></TimePicker12Demo>
-            )}
-          />
+          >
+            <FormField
+              control={form.control}
+              name="time_valid_start"
+              render={({ field }) => (
+                <TimePicker12Demo
+                  date={timeStart}
+                  setDate={setTimeStart}
+                ></TimePicker12Demo>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="time_valid_end"
+              render={({ field }) => (
+                <TimePicker12Demo
+                  date={timeEnd}
+                  setDate={setTimeEnd}
+                ></TimePicker12Demo>
+              )}
+            />
+          </div>
         </div>
 
         <div className="flex justify-end z-10">
