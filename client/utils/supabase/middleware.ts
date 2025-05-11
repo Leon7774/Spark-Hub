@@ -66,6 +66,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // if
+  // User is logged in
+  // User tries to access login page
+  // then
+  // Redirect user to sessions page
   if (request.nextUrl.pathname === "/login" && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/sessions";

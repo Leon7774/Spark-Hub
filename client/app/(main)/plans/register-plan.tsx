@@ -41,6 +41,7 @@ import {
 import clsx from "clsx";
 import { PhilippinePeso } from "lucide-react";
 import { TimePicker12Demo } from "./time-picker";
+import { time } from "console";
 
 // This is the schema for the Subsription Plans
 export const PlanSubmitSchema = z.object({
@@ -235,44 +236,39 @@ export default function RegisterPlanForm({
             )}
           />
         </div>
-        <div className="">
-          <span className="text-sm">Only available at a given time</span>
-          <Switch></Switch>
-        </div>
-
-        <div
-          className={clsx(
-            "transition-all duration-300 flex-col gap-8 flex",
-            planType === "straight"
-              ? "opacity-100 max-h-40"
-              : "opacity-0 max-h-0"
-          )}
-        >
-          <div
-            className={clsx(
-              isLimited === true ? "opacity-100 max-h-40" : "opacity-0 max-h-0"
-            )}
-          >
-            <FormField
-              control={form.control}
-              name="time_valid_start"
-              render={({ field }) => (
-                <TimePicker12Demo
-                  date={timeStart}
-                  setDate={setTimeStart}
-                ></TimePicker12Demo>
+        <div className="flex flex-col gap-y-2">
+          <div className="flex items-center gap-x-4">
+            <span className="text-sm font-medium">Time-Limited</span>
+            <Switch checked={isLimited} onCheckedChange={setLimited}></Switch>
+          </div>
+          <div>
+            {" "}
+            <div
+              className={clsx(
+                "transition-all duration-300 grid grid-cols-2 gap-x-2",
+                isLimited === true
+                  ? "opacity-100 max-h-40"
+                  : "opacity-0 max-h-0",
+                "bg-background-2  "
               )}
-            />
-            <FormField
-              control={form.control}
-              name="time_valid_end"
-              render={({ field }) => (
-                <TimePicker12Demo
-                  date={timeEnd}
-                  setDate={setTimeEnd}
-                ></TimePicker12Demo>
-              )}
-            />
+            >
+              <div>
+                <span>Start Time</span>
+                <FormField
+                  control={form.control}
+                  name="time_valid_start"
+                  render={({ field }) => <Input type="time" {...field}></Input>}
+                />
+              </div>
+              <div>
+                <span>End Time</span>
+                <FormField
+                  control={form.control}
+                  name="time_valid_end"
+                  render={({ field }) => <Input type="time" {...field}></Input>}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -288,6 +284,7 @@ export default function RegisterPlanForm({
             onClick={() => {
               form.reset();
               setPlanType(undefined);
+              setLimited(false);
               toast("Form has been cleared", {
                 description: "Sunday, December 03, 2023 at 9:00 AM",
                 action: {
