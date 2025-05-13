@@ -237,7 +237,7 @@ export default function RegisterPlanForm({
           />
         </div>
         <div className="flex flex-col gap-y-2">
-          <div className="flex items-center gap-x-4">
+          <div className="flex items-center gap-x-4 z-50">
             <span className="text-sm font-medium">Time-Limited</span>
             <Switch checked={isLimited} onCheckedChange={setLimited}></Switch>
           </div>
@@ -245,34 +245,50 @@ export default function RegisterPlanForm({
             {" "}
             <div
               className={clsx(
-                "transition-all duration-300 flex items-center justify-between gap-x-2",
+                "transition-all duration-300 grid grid-cols-2 justify-between gap-x-4",
                 isLimited === true
                   ? "opacity-100 max-h-40"
                   : "opacity-0 max-h-0"
               )}
             >
-              <div>
-                <span>Start Time</span>
+              <div className="flex flex-col gap-2">
+                <FormLabel>Start Time</FormLabel>
                 <FormField
                   control={form.control}
                   name="time_valid_start"
-                  render={({ field }) => (
-                    <Input type="time" {...field} className="w-40"></Input>
-                  )}
+                  render={({ field }) => <Input type="time" {...field}></Input>}
                 />
               </div>
 
-              <div>
-                <span>End Time</span>
+              <div className="flex flex-col gap-2">
+                <FormLabel>End Time</FormLabel>
                 <FormField
                   control={form.control}
                   name="time_valid_end"
-                  render={({ field }) => (
-                    <Input type="time" {...field} className="w-40"></Input>
-                  )}
+                  render={({ field }) => <Input type="time" {...field}></Input>}
                 />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Hours */}
+
+        <div
+          className={clsx(
+            "transition-all duration-300 flex items-center justify-between gap-x-2",
+            planType === "straight"
+              ? "opacity-100 max-h-40"
+              : "opacity-0 max-h-0"
+          )}
+        >
+          <div className="flex flex-col gap-2">
+            <FormLabel>Hours</FormLabel>
+            <FormField
+              control={form.control}
+              name="time_included"
+              render={({ field }) => <Input type="number" {...field} min={0} />}
+            />
           </div>
         </div>
 

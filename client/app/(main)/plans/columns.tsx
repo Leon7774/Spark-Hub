@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { formatTimeDisplay } from "@/lib/utils";
 
 export type Subscription = {
   id: number;
@@ -52,10 +53,25 @@ export const columns: ColumnDef<Subscription>[] = [
     ),
   },
   {
+    accessorKey: "plan_type",
+    header: "Type",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("plan_type")}</div>
+    ),
+  },
+  {
+    accessorKey: "time_included",
+    header: "Time",
+    cell: ({ row }) => {
+      const seconds = row.getValue("time_included") as number;
+      return <div>{formatTimeDisplay(seconds)}</div>;
+    },
+  },
+  {
     accessorKey: "price",
     header: "Price",
     cell: ({ row }) => {
-      const price = row.getValue("price") as number; // 👈 tell TypeScript this is a number
+      const price = row.getValue("price") as number;
       const formatted = new Intl.NumberFormat("en-PH", {
         style: "currency",
         currency: "PHP",
@@ -64,12 +80,11 @@ export const columns: ColumnDef<Subscription>[] = [
       return <div className="text-right">{formatted}</div>;
     },
   },
-
   {
-    accessorKey: "active",
+    accessorKey: "is_active",
     header: "Active",
     cell: ({ row }) => {
-      const active = row.getValue("active");
+      const active = row.getValue("is_active");
       return (
         <span
           className={
@@ -84,8 +99,10 @@ export const columns: ColumnDef<Subscription>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
+      const subscription = row.original;
+
       return (
-        <div className="text-right ">
+        <div className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0 mr-4">
@@ -95,10 +112,15 @@ export const columns: ColumnDef<Subscription>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>Copy payment ID</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit subscription
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>View customer</DropdownMenuItem>
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
+              <DropdownMenuItem className="text-red-600">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete subscription
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
