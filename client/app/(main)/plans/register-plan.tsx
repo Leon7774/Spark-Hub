@@ -245,11 +245,10 @@ export default function RegisterPlanForm({
             {" "}
             <div
               className={clsx(
-                "transition-all duration-300 grid grid-cols-2 gap-x-2",
+                "transition-all duration-300 flex items-center justify-between gap-x-2",
                 isLimited === true
                   ? "opacity-100 max-h-40"
-                  : "opacity-0 max-h-0",
-                "bg-background-2  "
+                  : "opacity-0 max-h-0"
               )}
             >
               <div>
@@ -257,15 +256,20 @@ export default function RegisterPlanForm({
                 <FormField
                   control={form.control}
                   name="time_valid_start"
-                  render={({ field }) => <Input type="time" {...field}></Input>}
+                  render={({ field }) => (
+                    <Input type="time" {...field} className="w-40"></Input>
+                  )}
                 />
               </div>
+
               <div>
                 <span>End Time</span>
                 <FormField
                   control={form.control}
                   name="time_valid_end"
-                  render={({ field }) => <Input type="time" {...field}></Input>}
+                  render={({ field }) => (
+                    <Input type="time" {...field} className="w-40"></Input>
+                  )}
                 />
               </div>
             </div>
