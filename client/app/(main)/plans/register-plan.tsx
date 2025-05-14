@@ -256,7 +256,9 @@ export default function RegisterPlanForm({
                 <FormField
                   control={form.control}
                   name="time_valid_start"
-                  render={({ field }) => <Input type="time" {...field}></Input>}
+                  render={({ field }) => (
+                    <Input type="time" {...field} value={field.value || ""} />
+                  )}
                 />
               </div>
 
@@ -265,7 +267,9 @@ export default function RegisterPlanForm({
                 <FormField
                   control={form.control}
                   name="time_valid_end"
-                  render={({ field }) => <Input type="time" {...field}></Input>}
+                  render={({ field }) => (
+                    <Input type="time" {...field} value={field.value || ""} />
+                  )}
                 />
               </div>
             </div>
