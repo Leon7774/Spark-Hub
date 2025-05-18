@@ -36,6 +36,7 @@ export async function updateSession(request: NextRequest) {
     "/favicon.ico",
     "/api",
     "/login",
+    "/register",
   ].some((prefix) => request.nextUrl.pathname.startsWith(prefix));
 
   if (!shouldCheckAuth) return supabaseResponse; // Prevents checking auth for static or unimportant paths
@@ -48,7 +49,8 @@ export async function updateSession(request: NextRequest) {
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !request.nextUrl.pathname.startsWith("/auth") &&
+    !request.nextUrl.pathname.startsWith("/register")
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();

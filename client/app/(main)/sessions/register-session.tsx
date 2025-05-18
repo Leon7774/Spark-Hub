@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { SubscriptionTypes } from "@/utils/types";
-import { PlanType, Plan, getPlansByType } from "@/app/api/plans";
+import { PlanType, Plan } from "@/app/api/plans";
 import { Select } from "@/components/ui/select";
 import {
   SelectContent,
@@ -44,7 +44,8 @@ import {
 } from "@/components/ui/select";
 import clsx from "clsx";
 import { PhilippinePeso, Search } from "lucide-react";
-import { Customer, getCustomers } from "@/app/api/customers";
+import { Customer } from "@/app/api/customers";
+import { createClient } from "@/utils/supabase/client";
 
 // This is the schema for customer sessions
 export const SessionSchema = z.object({
@@ -73,6 +74,7 @@ export const SessionSchema = z.object({
 const sessionFormSchema = SessionSchema;
 
 export default function RegisterSessionForm({
+  dialogOpen,
   dialogOpenSet,
 }: {
   dialogOpen: boolean;
@@ -89,33 +91,42 @@ export default function RegisterSessionForm({
   const [availablePlans, setAvailablePlans] = useState<Plan[]>([]);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
 
-  // Load customers on component mount
-  useEffect(() => {
-    async function fetchCustomers() {
-      const data = await getCustomers();
-      setCustomers(data);
-    }
-    fetchCustomers();
-  }, []);
+  function getPlanId(planName: string) {
+    return availablePlans.find((plan) => plan.name === planName)?.id;
+  }
 
-  // Load plans when session type changes
+  // Load customers and plans
   useEffect(() => {
-    async function fetchPlans() {
-      if (!sessionType || sessionType === "custom") {
-        setAvailablePlans([]);
-        return;
-      }
-
+    async function loadData() {
       try {
-        const plans = await getPlansByType(sessionType as PlanType);
-        setAvailablePlans(plans);
+        const supabase = await createClient();
+
+        // Fetch customers
+        const { data: customersData, error: customersError } = await supabase
+          .from("customers")
+          .select("*");
+
+        if (customersError) throw customersError;
+        setCustomers(customersData || []);
+
+        // Fetch plans if session type is set
+        if (sessionType && sessionType !== "custom") {
+          const { data: plansData, error: plansError } = await supabase
+            .from("subscription_plans")
+            .select("*")
+            .eq("plan_type", sessionType)
+            .eq("is_active", true);
+
+          if (plansError) throw plansError;
+          setAvailablePlans(plansData || []);
+        }
       } catch (error) {
-        console.error("Error fetching plans:", error);
-        toast.error("Failed to load plans");
+        console.error("Error loading data:", error);
+        toast.error("Failed to load data");
       }
     }
 
-    fetchPlans();
+    loadData();
   }, [sessionType]);
 
   const form = useForm<z.infer<typeof sessionFormSchema>>({
@@ -143,9 +154,41 @@ export default function RegisterSessionForm({
 
   async function handleConfirm(values: z.infer<typeof sessionFormSchema>) {
     setLoading(true);
-    console.log("Trying to register session:", values);
-    dialogOpenSet(false);
-    setShowDialog(false);
+    try {
+      const supabase = await createClient();
+
+      // Create session data
+      const sessionData = {
+        customer_id: values.customer_id,
+        session_type: values.session_type,
+        plan_id: values.plan_id,
+        start_time:
+          values.session_type === "custom"
+            ? values.custom_start_time
+            : new Date().toISOString(),
+        end_time:
+          values.session_type === "custom" ? values.custom_end_time : null,
+        price: values.session_type === "custom" ? values.custom_price : null,
+        status: "active",
+      };
+
+      // Insert session into Supabase
+      const { error } = await supabase.from("sessions").insert(sessionData);
+
+      if (error) throw error;
+
+      toast.success("Session registered successfully");
+      dialogOpenSet(false);
+      setShowDialog(false);
+      form.reset();
+      setSelectedCustomer(null);
+      setSessionType(undefined);
+    } catch (error) {
+      console.error("Error registering session:", error);
+      toast.error("Failed to register session");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -233,15 +276,13 @@ export default function RegisterSessionForm({
                 value={field.value}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select session type" />
+                  <SelectValue placeholder="Select a session type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="subscription">
-                    Subscription Plan
-                  </SelectItem>
-                  <SelectItem value="straight">Straight Plan</SelectItem>
-                  <SelectItem value="hourly">Hourly Plan</SelectItem>
-                  <SelectItem value="custom">Custom Session</SelectItem>
+                  <SelectItem value="subscription">Subscription</SelectItem>
+                  <SelectItem value="straight">Straight</SelectItem>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -249,7 +290,7 @@ export default function RegisterSessionForm({
           )}
         />
 
-        {/* Plan Selection (for subscription, straight, and hourly) */}
+        {/* Plan Selection */}
         {sessionType && sessionType !== "custom" && (
           <FormField
             control={form.control}
@@ -258,7 +299,7 @@ export default function RegisterSessionForm({
               <FormItem>
                 <FormLabel>Select Plan</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => field.onChange(Number(value))}
                   value={field.value?.toString()}
                 >
                   <SelectTrigger className="w-full">
@@ -336,65 +377,27 @@ export default function RegisterSessionForm({
           </div>
         )}
 
-        <div className="flex justify-end space-x-4">
-          <Button type="submit" disabled={isLoading}>
-            Register Session
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              form.reset();
-              setSelectedCustomer(null);
-              setSessionType(undefined);
-            }}
-          >
-            Clear
-          </Button>
-        </div>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Registering..." : "Register Session"}
+        </Button>
       </form>
 
-      {/* Confirmation Dialog */}
       <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Session Registration</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to register this session?
-              {selectedCustomer && (
-                <div className="mt-2">
-                  <p>
-                    Customer: {selectedCustomer.first_name}{" "}
-                    {selectedCustomer.last_name}
-                  </p>
-                  <p>Session Type: {sessionType}</p>
-                  {sessionType !== "custom" && form.getValues("plan_id") && (
-                    <p>
-                      Selected Plan:{" "}
-                      {
-                        availablePlans.find(
-                          (p) => p.id === form.getValues("plan_id")
-                        )?.name
-                      }
-                    </p>
-                  )}
-                  {sessionType === "custom" && (
-                    <>
-                      <p>
-                        Time: {form.getValues("custom_start_time")} -{" "}
-                        {form.getValues("custom_end_time")}
-                      </p>
-                      <p>Price: ₱{form.getValues("custom_price")}</p>
-                    </>
-                  )}
-                </div>
-              )}
+              Are you sure you want to register this session? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleConfirm(form.getValues())}>
-              Confirm
+            <AlertDialogAction
+              onClick={() => handleConfirm(form.getValues())}
+              disabled={isLoading}
+            >
+              {isLoading ? "Registering..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

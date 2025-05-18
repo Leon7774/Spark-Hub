@@ -1,5 +1,5 @@
 import React from "react";
-import { LogTable } from "./data-table";
+import { ActionLogsTable } from "./data-table";
 import { columns, subscriptions } from "./columns";
 
 const page = () => {
@@ -7,7 +7,7 @@ const page = () => {
     <div>
       <h1 className="text-4xl font-black mb-8">Activity Log</h1>
 
-      <LogTable data={subscriptions} columns={columns}></LogTable>
+      <ActionLogsTable />
     </div>
   );
 };

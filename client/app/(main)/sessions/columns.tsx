@@ -1,4 +1,7 @@
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { format, differenceInMinutes } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { PhilippinePeso } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -106,39 +109,166 @@ export type Payment = {
   name: string;
 };
 
-export const columns: ColumnDef<Payment>[] = [
+interface Session {
+  id: string;
+  customer_id: number;
+  session_type: string;
+  plan_id: number | null;
+  start_time: string;
+  end_time: string | null;
+  price: number | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  branch: "Obrero" | "Matina";
+  customer?: {
+    first_name: string;
+    last_name: string;
+  };
+  plan?: {
+    name: string;
+    duration_minutes?: number;
+  };
+}
+
+export const columns: ColumnDef<Session>[] = [
   {
-    accessorKey: "name",
-    header: ({ column }) => {
+    accessorKey: "customer",
+    header: "Customer",
+    cell: ({ row }) => {
+      const customer = row.original.customer;
+      return customer
+        ? `${customer.first_name} ${customer.last_name}`
+        : "Unknown";
+    },
+  },
+  {
+    accessorKey: "session_type",
+    header: "Type",
+    cell: ({ row }) => {
+      const type = row.original.session_type ?? "unknown";
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        <Badge
+          variant={
+            type === "subscription"
+              ? "default"
+              : type === "straight"
+              ? "secondary"
+              : type === "hourly"
+              ? "outline"
+              : "destructive"
+          }
         >
-          Name
-          <ArrowUpDown />
-        </Button>
+          {type.charAt(0).toUpperCase() + type.slice(1)}
+        </Badge>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "plan",
-    header: () => <div className="text-right">Plan</div>,
+    header: "Plan",
     cell: ({ row }) => {
-      const amount: string = row.getValue("plan");
+      const plan = row.original.plan;
+      return plan ? plan.name : "Custom";
+    },
+  },
+  {
+    accessorKey: "start_time",
+    header: "Start Time",
+    cell: ({ row }) => {
+      return format(new Date(row.original.start_time), "MMM d, h:mm a");
+    },
+  },
+  {
+    accessorKey: "end_time",
+    header: "End Time",
+    cell: ({ row }) => {
+      const endTime = row.original.end_time;
+      return endTime ? new Date(endTime).toLocaleString() : "Ongoing";
+    },
+  },
+  {
+    accessorKey: "time_remaining",
+    header: "Time Remaining",
+    cell: ({ row }) => {
+      const plan = row.original.plan;
+      const startTime = new Date(row.original.start_time);
+      const now = new Date();
 
-      // // Format the amount as a dollar amount
-      // const formatted = new Intl.NumberFormat("en-US", {
-      //   style: "currency",
-      //   currency: "USD",
-      // }).format();
+      if (!plan?.duration_minutes) return "Unlimited";
 
-      return (
-        <div className="text-right font-medium">
-          {amount.toLocaleUpperCase()}
+      const elapsedMinutes = differenceInMinutes(now, startTime);
+      const remainingMinutes = plan.duration_minutes - elapsedMinutes;
+
+      if (remainingMinutes <= 0) return "Expired";
+
+      const hours = Math.floor(remainingMinutes / 60);
+      const minutes = remainingMinutes % 60;
+
+      return `${hours}h ${minutes}m`;
+    },
+  },
+  {
+    accessorKey: "session_length",
+    header: "Session Length",
+    cell: ({ row }) => {
+      const startTime = new Date(row.original.start_time);
+      const now = new Date();
+      const minutes = differenceInMinutes(now, startTime);
+
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+
+      return `${hours}h ${remainingMinutes}m`;
+    },
+  },
+  {
+    accessorKey: "branch",
+    header: "Branch",
+    cell: ({ row }) => {
+      return row.original.branch;
+    },
+  },
+  {
+    accessorKey: "price",
+    header: "Price",
+    cell: ({ row }) => {
+      const price = row.original.price;
+      return price ? (
+        <div className="flex items-center gap-1">
+          <PhilippinePeso className="h-4 w-4" />
+          {price.toLocaleString()}
         </div>
+      ) : (
+        "N/A"
       );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status || "unknown";
+      return (
+        <Badge
+          variant={
+            status === "active"
+              ? "default"
+              : status === "completed"
+              ? "secondary"
+              : "destructive"
+          }
+        >
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "created_at",
+    header: "Created",
+    cell: ({ row }) => {
+      return new Date(row.original.created_at).toLocaleString();
     },
   },
   {

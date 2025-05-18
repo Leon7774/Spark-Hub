@@ -11,10 +11,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { data, columns } from "./columns";
-
+import { columns } from "./columns";
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -25,8 +23,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import RegisterButton from "./register-button";
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
-export function SessionsTable() {
+interface Session {
+  id: string;
+  customer_id: number;
+  session_type: string;
+  plan_id: number | null;
+  start_time: string;
+  end_time: string | null;
+  price: number | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  customer?: {
+    first_name: string;
+    last_name: string;
+  };
+  plan?: {
+    name: string;
+  };
+}
+
+export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -34,6 +56,33 @@ export function SessionsTable() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [data, setData] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load sessions from Supabase
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const supabase = await createClient();
+
+        // Fetch sessions with related data
+        const { data: sessions, error } = await supabase
+          .from("sessions")
+          .select("*");
+
+        if (error) throw error;
+        console.log(sessions);
+        setData(sessions || []);
+      } catch (error) {
+        console.error("Error loading sessions:", error);
+        toast.error("Failed to load sessions");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
 
   const table = useReactTable({
     data,
@@ -57,15 +106,32 @@ export function SessionsTable() {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <RegisterButton></RegisterButton>
-        <Input
-          placeholder="Filter name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+        <RegisterButton />
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Filter by customer..."
+            value={
+              (table.getColumn("customer")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("customer")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+          <Input
+            placeholder="Filter by type..."
+            value={
+              (table.getColumn("session_type")?.getFilterValue() as string) ??
+              ""
+            }
+            onChange={(event) =>
+              table
+                .getColumn("session_type")
+                ?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -88,7 +154,16 @@ export function SessionsTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -110,7 +185,7 @@ export function SessionsTable() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  No sessions found.
                 </TableCell>
               </TableRow>
             )}
@@ -128,7 +203,7 @@ export function SessionsTable() {
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="transition-colors "
+            className="transition-colors"
           >
             Previous
           </Button>
@@ -145,4 +220,4 @@ export function SessionsTable() {
       </div>
     </div>
   );
-}
+};

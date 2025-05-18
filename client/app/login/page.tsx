@@ -1,6 +1,7 @@
 import ProfileForm from "./login-form";
 import { Button } from "@/components/ui/button";
 import { Sparkle } from "lucide-react";
+import Link from "next/link";
 
 const login = () => {
   return (
@@ -26,9 +27,9 @@ const login = () => {
         <p className="mt-10 text-center text-sm w-20 text-primary/40">
           New here?
         </p>
-        <Button type="submit" className="bg-orange-400 ">
-          Register Staff
-        </Button>
+        <Link href="/register">
+          <Button className="bg-orange-400 ">Register Staff</Button>
+        </Link>
       </div>
     </div>
   );
