@@ -18,13 +18,13 @@ export const RegisterButton = () => {
       <div className="flex gap-4">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="mb-2">Create Subscription Plan</Button>
+            <Button className="mb-2">Start Session</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader className="pt-5">
-              <DialogTitle>Create Subscription Plan</DialogTitle>
+              <DialogTitle>Start Session</DialogTitle>
               <DialogDescription>
-                Make a subscription plan here. Enter the details below.
+                Initiate a session here. Enter the details below.
               </DialogDescription>
             </DialogHeader>
             <RegisterPlanForm

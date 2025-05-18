@@ -12,12 +12,32 @@ export const PlanSchema = z.object({
   days_included: z.number(),
   expiry_duration: z.number(),
   plan_type: z.string(),
+  name: z.string(),
+  price: z.number(),
 });
 
 export enum PlanType {
   HOURLY = "hourly",
   STRAIGHT = "straight",
   BUNDLE = "bundle",
+}
+
+export type Plan = z.infer<typeof PlanSchema>;
+
+export async function getPlansByType(type: PlanType): Promise<Plan[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("subscription_plans")
+    .select("*")
+    .eq("plan_type", type)
+    .eq("is_active", true);
+
+  if (error || !data) throw error;
+
+  const plans = PlanSchema.array().parse(data);
+
+  return plans;
 }
 
 export type Customer = z.infer<typeof PlanSchema>; // <-- THIS gives you the TS type
@@ -70,5 +90,3 @@ export async function registerCustomer(
 
   return error;
 }
-
-

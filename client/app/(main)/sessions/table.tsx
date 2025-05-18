@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/table";
 import RegisterButton from "./register-button";
 
-export function DataTableDemo() {
+export function SessionsTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -57,17 +57,15 @@ export function DataTableDemo() {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <div className="flex">
-          <RegisterButton></RegisterButton>
-          <Input
-            placeholder="Filter name..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-        </div>
+        <RegisterButton></RegisterButton>
+        <Input
+          placeholder="Filter name..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
       </div>
       <div className="rounded-md border">
         <Table>
