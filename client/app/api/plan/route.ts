@@ -29,10 +29,36 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(validatedPlans);
 }
 
-export async function GET(request: NextRequest, { params }) {
+export async function POST(request: NextRequest) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("subscription_plans").select("*");
+  try {
+    // Parse the incoming JSON body
+    const body = await request.json();
 
-  return NextResponse.json(validatedPlans);
+    // Validate the input using Zod schema
+    const validated = subscriptionPlanSchema.parse(body);
+
+    // Insert the validated plan into the database
+    const { data, error } = await supabase
+      .from("subscription_plans")
+      .insert([validated])
+      .select();
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return NextResponse.json(
+        { error: "Failed to create plan" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data[0], { status: 201 });
+  } catch (err: any) {
+    console.error("Validation or insert error:", err);
+    return NextResponse.json(
+      { error: err.message || "Invalid input" },
+      { status: 400 }
+    );
+  }
 }

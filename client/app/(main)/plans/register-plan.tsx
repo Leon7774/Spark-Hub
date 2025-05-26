@@ -95,6 +95,7 @@ export default function RegisterPlanForm({
   const [showDialog, setShowDialog] = useState(false);
   const [planType, setPlanType] = useState<PlanType | undefined>(undefined);
   const [isLimited, setLimited] = useState<boolean>(false);
+  const [bundleIsTimeIncluded, setBundleIsTimeIncluded] = useState(false);
 
   const form = useForm<PlanFormValues>({
     resolver: zodResolver(planFormSchema),
@@ -123,6 +124,15 @@ export default function RegisterPlanForm({
     console.log("Trying to register", values);
     dialogOpenSet(false);
     setShowDialog(false);
+    await fetch("/api/subscription_plans", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...values,
+      }),
+    });
   }
 
   return (
@@ -215,17 +225,125 @@ export default function RegisterPlanForm({
 
         {/* Bundle Plan Fields */}
         {planType === "bundle" && (
+          <>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium">
+                Use Time Instead of Day Passes
+              </span>
+              <Switch
+                checked={bundleIsTimeIncluded}
+                onCheckedChange={setBundleIsTimeIncluded}
+              />
+            </div>
+
+            <div className="">
+              {!bundleIsTimeIncluded && (
+                <div className="grid grid-cols-2 gap-x-4">
+                  <FormField
+                    control={form.control}
+                    name="days_included"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Day Passes Included</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter number of day passes"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="expiry_duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Valid For (Days)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter validity in days"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+              {bundleIsTimeIncluded && (
+                <div className="grid grid-cols-2 gap-x-4">
+                  <FormField
+                    control={form.control}
+                    name="time_included"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Time Included (in minutes)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 600 for 10 hours"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="expiry_duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Valid For (Days)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter validity in days"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        {planType === "straight" && (
           <div className="grid grid-cols-2 gap-x-4">
             <FormField
               control={form.control}
-              name="days_included"
+              name="time_included"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Day Passes Included</FormLabel>
+                  <FormLabel>Time Included (in minutes)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Enter number of day passes"
+                      placeholder="e.g., 120 for 2 hours"
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                       value={field.value ?? ""}
