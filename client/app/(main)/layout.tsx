@@ -4,6 +4,7 @@ import "../globals.css";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import { Content } from "@/components/ui/content-wrapper";
 import { UserProvider } from "@/context/userContext";
+import { DataProvider } from "@/context/dataContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,10 @@ export default function RootLayout({
       style={{ overscrollBehavior: "none" }}
     >
       <UserProvider>
-        <Sidebar></Sidebar>
-        <Content>{children}</Content>
+        <DataProvider>
+          <Sidebar></Sidebar>
+          <Content>{children}</Content>
+        </DataProvider>
       </UserProvider>
     </div>
   );

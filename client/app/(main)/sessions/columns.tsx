@@ -1,10 +1,9 @@
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { format, differenceInMinutes } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { PhilippinePeso } from "lucide-react";
+import { MoreHorizontal, PhilippinePeso } from "lucide-react";
+import { getCustomerById, getPlanById } from "./functions";
+import { useDataContext } from "@/context/dataContext";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -121,14 +120,6 @@ interface Session {
   created_at: string;
   updated_at: string;
   branch: "Obrero" | "Matina";
-  customer?: {
-    first_name: string;
-    last_name: string;
-  };
-  plan?: {
-    name: string;
-    duration_minutes?: number;
-  };
 }
 
 export const columns: ColumnDef<Session>[] = [
@@ -136,7 +127,7 @@ export const columns: ColumnDef<Session>[] = [
     accessorKey: "customer",
     header: "Customer",
     cell: ({ row }) => {
-      const customer = row.original.customer;
+      const customer = getCustomerById(row.original.customer_id);
       return customer
         ? `${customer.first_name} ${customer.last_name}`
         : "Unknown";
@@ -168,17 +159,17 @@ export const columns: ColumnDef<Session>[] = [
     accessorKey: "plan",
     header: "Plan",
     cell: ({ row }) => {
-      const plan = row.original.plan;
-      return plan ? plan.name : "Custom";
+      const plan = getPlanById(Number(row.original.id));
+      return plan ? plan : "Custom";
     },
   },
-  {
-    accessorKey: "start_time",
-    header: "Start Time",
-    cell: ({ row }) => {
-      return format(new Date(row.original.start_time), "MMM d, h:mm a");
-    },
-  },
+  // {
+  //   accessorKey: "start_time",
+  //   header: "Start Time",
+  //   cell: ({ row }) => {
+  //     return format(new Date(row.original.start_time), "MMM d, h:mm a");
+  //   },
+  // },
   {
     accessorKey: "end_time",
     header: "End Time",

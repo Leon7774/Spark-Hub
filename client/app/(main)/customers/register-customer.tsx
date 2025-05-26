@@ -35,7 +35,7 @@ export interface userCredentials {
   password: string;
 }
 
-const formSchema = z.object({
+export const formSchema = z.object({
   first_name: z
     .string()
     .nonempty({ message: "First name is empty" })

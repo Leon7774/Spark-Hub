@@ -27,26 +27,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-
-interface Session {
-  id: string;
-  customer_id: number;
-  session_type: string;
-  plan_id: number | null;
-  start_time: string;
-  end_time: string | null;
-  price: number | null;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  customer?: {
-    first_name: string;
-    last_name: string;
-  };
-  plan?: {
-    name: string;
-  };
-}
+import { useDataContext } from "@/context/dataContext";
+import { getPlanById } from "./functions";
 
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -58,28 +40,19 @@ export const SessionsTable = () => {
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const {customers, plans, sessions} = useDataContext();
 
   // Load sessions from Supabase
   useEffect(() => {
     async function loadData() {
-      try {
-        const supabase = await createClient();
+      let count = 0;
 
-        // Fetch sessions with related data
-        const { data: sessions, error } = await supabase
-          .from("sessions")
-          .select("*");
+      sessions.map((session) => (...row: any, session_type = plans.find(session.)))
 
-        if (error) throw error;
-        console.log(sessions);
-        setData(sessions || []);
-      } catch (error) {
-        console.error("Error loading sessions:", error);
-        toast.error("Failed to load sessions");
-      } finally {
-        setIsLoading(false);
-      }
+      setData(sessions || []);
     }
+
+    
 
     loadData();
   }, []);
