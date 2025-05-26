@@ -13,7 +13,6 @@ import {
 } from "@tanstack/react-table";
 
 import BaseTable from "@/components/ui/base-table";
-import { DataTableProps } from "@/utils/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
@@ -23,8 +22,6 @@ import {
   shouldSyncData,
   syncDataFromSupabase,
 } from "@/utils/cache/indexeddb";
-import { Plan } from "@/app/api/plans";
-import { Customer } from "@/app/api/customers";
 import { format } from "date-fns";
 import { toast } from "sonner";
 

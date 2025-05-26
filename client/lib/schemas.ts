@@ -36,26 +36,24 @@ export const customerSchema = z.object({
 export const subscriptionPlanSchema = z.object({
   id: z.number(),
   name: z.string(),
-  active: z.boolean(),
+  is_active: z.boolean(),
   price: z.number(),
-  type: z.enum(["straight", "bundle", "hourly"]),
-  length: z.number().optional(),
+  plan_type: z.enum(["straight", "bundle", "hourly"]),
+  time_included: z.number().nullable(),
   time_valid_start: z
     .string()
-    .regex(
-      /^([01]\d|2[0-3]):([0-5]\d)$/,
-      "Invalid time format, expected HH:mm"
-    ),
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format, expected HH:mm")
+    .nullable(),
   time_valid_end: z
     .string()
-    .regex(
-      /^([01]\d|2[0-3]):([0-5]\d)$/,
-      "Invalid time format, expected HH:mm"
-    ),
-  createdAt: z.date(),
-  days_included: z.number().optional(),
-  expiry_duration: z.number().optional(),
-  available_at: z.array(z.enum(["Obrero", "Matina"])), // Or z.array(BranchEnum) if only Obrero/Matina
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format, expected HH:mm")
+    .nullable(),
+  created_at: z
+    .preprocess((val) => new Date(val as string), z.date())
+    .nullable(),
+  days_included: z.number().nullable(),
+  expiry_duration: z.number().nullable(),
+  available_at: z.array(z.enum(["obrero", "matina"])), // Or z.array(BranchEnum) if only Obrero/Matina
 });
 
 export const subscriptionActiveSchema = z.object({

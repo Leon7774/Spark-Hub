@@ -11,79 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Clock, MapPin } from "lucide-react";
-
-// Type definition based on your schema
-export type SubscriptionPlan = {
-  id: number;
-  name: string;
-  active: boolean;
-  price: number;
-  type: "straight" | "bundle" | "hourly";
-  length?: number;
-  time_valid_start: string;
-  time_valid_end: string;
-  createdAt: Date;
-  days_included?: number;
-  expiry_duration?: number;
-  available_at: ("Obrero" | "Matina")[];
-};
-
-// Sample data
-export const subscriptionPlans: SubscriptionPlan[] = [
-  {
-    id: 1,
-    name: "Basic Plan",
-    active: true,
-    price: 350,
-    type: "straight",
-    length: 30,
-    time_valid_start: "08:00",
-    time_valid_end: "22:00",
-    createdAt: new Date("2024-01-15"),
-    days_included: 30,
-    expiry_duration: 2592000, // 30 days in seconds
-    available_at: ["Obrero", "Matina"],
-  },
-  {
-    id: 2,
-    name: "Premium Bundle",
-    active: true,
-    price: 750,
-    type: "bundle",
-    length: 60,
-    time_valid_start: "06:00",
-    time_valid_end: "23:59",
-    createdAt: new Date("2024-02-01"),
-    days_included: 60,
-    expiry_duration: 5184000, // 60 days in seconds
-    available_at: ["Obrero"],
-  },
-  {
-    id: 3,
-    name: "Hourly Access",
-    active: false,
-    price: 25,
-    type: "hourly",
-    time_valid_start: "09:00",
-    time_valid_end: "21:00",
-    createdAt: new Date("2024-01-20"),
-    available_at: ["Matina"],
-  },
-  {
-    id: 4,
-    name: "Weekly Special",
-    active: true,
-    price: 180,
-    type: "straight",
-    length: 7,
-    time_valid_start: "07:00",
-    time_valid_end: "22:30",
-    createdAt: new Date("2024-02-10"),
-    days_included: 7,
-    expiry_duration: 604800, // 7 days in seconds
-    available_at: ["Obrero", "Matina"],
-  },
-];
+import { SubscriptionPlan } from "@/lib/schemas";
 
 export const columns: ColumnDef<SubscriptionPlan>[] = [
   {
@@ -105,18 +33,18 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     ),
   },
   {
-    accessorKey: "type",
+    accessorKey: "plan_type",
     header: "Type",
     cell: ({ row }) => {
-      const type = row.getValue("type") as string;
+      const plan_type = row.getValue("plan_type") as string;
       const typeColors = {
         straight: "bg-blue-100 text-blue-800",
         bundle: "bg-purple-100 text-purple-800",
         hourly: "bg-green-100 text-green-800",
       };
       return (
-        <Badge className={typeColors[type as keyof typeof typeColors]}>
-          {type.charAt(0).toUpperCase() + type.slice(1)}
+        <Badge className={typeColors[plan_type as keyof typeof typeColors]}>
+          {plan_type.charAt(0).toUpperCase() + plan_type.slice(1)}
         </Badge>
       );
     },
@@ -126,7 +54,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     header: "Price",
     cell: ({ row }) => {
       const price = row.getValue("price") as number;
-      const type = row.original.type;
+      const plan_type = row.original.plan_type;
       const formatted = new Intl.NumberFormat("en-PH", {
         style: "currency",
         currency: "PHP",
@@ -134,7 +62,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
       return (
         <div className="text-right">
           {formatted}
-          {type === "hourly" && (
+          {plan_type === "hourly" && (
             <span className="text-xs text-gray-500">/hr</span>
           )}
         </div>
@@ -176,10 +104,10 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     header: "Duration",
     cell: ({ row }) => {
       const length = row.getValue("length") as number | undefined;
-      const type = row.original.type;
+      const plan_type = row.original.plan_type;
       const daysIncluded = row.original.days_included;
 
-      if (type === "hourly") {
+      if (plan_type === "hourly") {
         return <span className="text-gray-400 text-sm">Per hour</span>;
       }
 
@@ -252,7 +180,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
               <DropdownMenuItem>View analytics</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-600">
-                {row.original.active ? "Deactivate" : "Activate"}
+                {row.original.is_active ? "Deactivate" : "Activate"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

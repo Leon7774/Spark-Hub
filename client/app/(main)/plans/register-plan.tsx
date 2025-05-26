@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/select";
 import clsx from "clsx";
 import { PhilippinePeso } from "lucide-react";
-import { time } from "console";
 
 // This is the schema for the Subsription Plans
 export const PlanSubmitSchema = z.object({
@@ -54,7 +53,7 @@ export const PlanSubmitSchema = z.object({
     .nonempty({ message: "Plan name is empty" })
     .min(2, { message: "Name is too short" }),
   // The type of a subscription plan ["Straight" || "Bundle" || "Hourly"]
-  plan_type: z.enum(SubscriptionTypes, {
+  plan_type: z.enum(SubscriptionTypes.options, {
     message: "Please choose a valid plan type",
   }),
   // OPTIONAL
@@ -128,14 +127,12 @@ export default function RegisterPlanForm({
   // Toggle if the plan is available at a set time
   const [isLimited, setLimited] = useState<boolean>(false);
   // The start and end of a plans availability, if isLimited === true
-  const [timeEnd, setTimeEnd] = useState<Date | undefined>(undefined);
-  const [timeStart, setTimeStart] = useState<Date | undefined>(undefined);
 
   const form = useForm<z.infer<typeof planFormSchema>>({
     resolver: zodResolver(planFormSchema),
     defaultValues: {
       plan_name: "",
-      plan_type: "",
+      plan_type: "straight",
       price: 0,
     },
   });
@@ -146,6 +143,7 @@ export default function RegisterPlanForm({
   }
 
   // 3. Handle the dialog confirmation.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function handleConfirm(values: z.infer<typeof planFormSchema>) {
     setLoading(true);
     console.log("Trying to register");
@@ -256,7 +254,13 @@ export default function RegisterPlanForm({
                 <FormField
                   control={form.control}
                   name="time_valid_start"
-                  render={({ field }) => <Input type="time" {...field}></Input>}
+                  render={({ field }) => (
+                    <Input
+                      type="time"
+                      {...field}
+                      value={field.value ?? ""}
+                    ></Input>
+                  )}
                 />
               </div>
               <div>
@@ -264,7 +268,12 @@ export default function RegisterPlanForm({
                 <FormField
                   control={form.control}
                   name="time_valid_end"
-                  render={({ field }) => <Input type="time" {...field}></Input>}
+                  render={({ field }) => (
+                    <Input type="time" {...field} value={field.value ?? ""}>
+                      {" "}
+                      value
+                    </Input>
+                  )}
                 />
               </div>
             </div>

@@ -67,6 +67,8 @@ export function SubscriptionPlansTable<TData, TValue>({
     },
   });
 
+  console.log("Table data:", data);
+
   return (
     <div className="w-full space-y-4">
       {/* Filters Section */}
@@ -89,35 +91,39 @@ export function SubscriptionPlansTable<TData, TValue>({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuCheckboxItem
-                checked={!table.getColumn("type")?.getFilterValue()}
+                checked={!table.getColumn("plan_type")?.getFilterValue()}
                 onCheckedChange={() =>
-                  table.getColumn("type")?.setFilterValue("")
+                  table.getColumn("plan_type")?.setFilterValue("")
                 }
               >
                 All Types
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={
-                  table.getColumn("type")?.getFilterValue() === "straight"
+                  table.getColumn("plan_type")?.getFilterValue() === "straight"
                 }
                 onCheckedChange={() =>
-                  table.getColumn("type")?.setFilterValue("straight")
+                  table.getColumn("plan_type")?.setFilterValue("straight")
                 }
               >
                 Straight
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
-                checked={table.getColumn("type")?.getFilterValue() === "bundle"}
+                checked={
+                  table.getColumn("plan_type")?.getFilterValue() === "bundle"
+                }
                 onCheckedChange={() =>
-                  table.getColumn("type")?.setFilterValue("bundle")
+                  table.getColumn("plan_type")?.setFilterValue("bundle")
                 }
               >
                 Bundle
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
-                checked={table.getColumn("type")?.getFilterValue() === "hourly"}
+                checked={
+                  table.getColumn("plan_type")?.getFilterValue() === "hourly"
+                }
                 onCheckedChange={() =>
-                  table.getColumn("type")?.setFilterValue("hourly")
+                  table.getColumn("plan_type")?.setFilterValue("hourly")
                 }
               >
                 Hourly

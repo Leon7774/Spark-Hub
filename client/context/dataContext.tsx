@@ -55,6 +55,9 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
       }
     }
+
+    console.log(plans);
+
     fetchData();
   }, []);
 

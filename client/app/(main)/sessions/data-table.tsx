@@ -25,7 +25,6 @@ import {
 import RegisterButton from "./register-button";
 import { useState } from "react";
 import { useDataContext } from "@/context/dataContext";
-import { getPlanById } from "./functions";
 import { Session } from "../../../lib/schemas";
 
 export const SessionsTable = () => {
