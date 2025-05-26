@@ -45,6 +45,7 @@ export const subscriptionPlanSchema = z.object({
 
 export const subscriptionActiveSchema = z.object({
   id: z.number(),
+  created_at: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
   customer_id: z.number(),
   plan_id: z.number(),
   expiry: z.date(),
@@ -69,9 +70,10 @@ export const logSchema = z.object({
 export const sessionSchema = z.object({
   id: z.string(),
   customer_id: z.number(),
-  plan_id: z.number().nullable(),
-  start_time: z.string(), // or z.date() if it's ISO format already parsed
-  end_time: z.string().nullable(), // or z.date().nullable()
+  plan_id: z.number(),
+  start_time: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
+  end_time: z.preprocess((val) => new Date(val as string), z.date()).nullable(),
+  time_left: z.number(),
   branch: BranchEnum,
   customer: z
     .object({
@@ -82,6 +84,19 @@ export const sessionSchema = z.object({
   plan: z
     .object({
       name: z.string(),
+      minutes: z.number().optional(),
+      day_passes: z.number().optional(),
+      expiry: z
+        .preprocess((val) => new Date(val as string), z.date())
+        .optional(),
+      price: z.number(),
+    })
+    .optional(),
+  subscription: z
+    .object({
+      time_left: z.number().optional(),
+      day_passes: z.number().optional(),
+      expiry_date: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
     })
     .optional(),
 });

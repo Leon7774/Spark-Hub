@@ -1,3 +1,5 @@
+"use client";
+
 import React, {
   createContext,
   useContext,
@@ -6,9 +8,11 @@ import React, {
   ReactNode,
 } from "react";
 
+import { Customer, SubscriptionPlan, Session } from "../lib/schemas";
+
 interface DataContextType {
   customers: Customer[];
-  plans: Plan[];
+  plans: SubscriptionPlan[];
   sessions: Session[];
   loading: boolean;
 }
@@ -24,7 +28,7 @@ export const useDataContext = () => useContext(DataContext);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
 

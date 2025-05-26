@@ -1,7 +1,4 @@
-import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, PhilippinePeso } from "lucide-react";
-import { getCustomerById, getPlanById } from "./functions";
-import { useDataContext } from "@/context/dataContext";
+import { MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,163 +10,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-
-export const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
-  },
-  {
-    id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
-  },
-  {
-    id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
-  },
-  {
-    id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "3u1reuv4",
-    plan: "hourly",
-    status: "in session",
-    name: "mike",
-  },
-  {
-    id: "derv1ws0",
-    plan: "monthly plan",
-    status: "offline",
-    name: "leon",
-  },
-  {
-    id: "5kma53ae",
-    plan: "plan 350",
-    status: "offline",
-    name: "marcellin",
-  },
-  {
-    id: "bhqecj4p",
-    plan: "hourly",
-    status: "in session",
-    name: "carla",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-  {
-    id: "m5gr84i9",
-    plan: "monthly plan",
-    status: "in session",
-    name: "john",
-  },
-];
-
-export type Payment = {
-  id: string;
-  plan: "hourly" | "plan 350" | "monthly plan";
-  status: "in session" | "offline";
-  name: string;
-};
-
-interface Session {
-  id: string;
-  customer_id: number;
-  session_type: string;
-  plan_id: number | null;
-  start_time: string;
-  end_time: string | null;
-  price: number | null;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  branch: "Obrero" | "Matina";
-}
+import { Session } from "@/lib/schemas";
+import { differenceInDays, differenceInMinutes, format } from "date-fns";
 
 export const columns: ColumnDef<Session>[] = [
   {
     accessorKey: "customer",
     header: "Customer",
     cell: ({ row }) => {
-      const customer = getCustomerById(row.original.customer_id);
+      const customer = row.original.customer;
       return customer
         ? `${customer.first_name} ${customer.last_name}`
         : "Unknown";
     },
   },
   {
-    accessorKey: "session_type",
-    header: "Type",
-    cell: ({ row }) => {
-      const type = row.original.session_type ?? "unknown";
-      return (
-        <Badge
-          variant={
-            type === "subscription"
-              ? "default"
-              : type === "straight"
-              ? "secondary"
-              : type === "hourly"
-              ? "outline"
-              : "destructive"
-          }
-        >
-          {type.charAt(0).toUpperCase() + type.slice(1)}
-        </Badge>
-      );
-    },
-  },
-  {
     accessorKey: "plan",
     header: "Plan",
     cell: ({ row }) => {
-      const plan = getPlanById(Number(row.original.id));
-      return plan ? plan : "Custom";
+      const plan = row.original.plan;
+      return plan ? plan.name : "Custom";
     },
   },
-  // {
-  //   accessorKey: "start_time",
-  //   header: "Start Time",
-  //   cell: ({ row }) => {
-  //     return format(new Date(row.original.start_time), "MMM d, h:mm a");
-  //   },
-  // },
+  {
+    accessorKey: "start_time",
+    header: "Start Time",
+    cell: ({ row }) => {
+      return format(new Date(row.original.start_time), "MMM d, h:mm a");
+    },
+  },
   {
     accessorKey: "end_time",
     header: "End Time",
@@ -179,24 +48,38 @@ export const columns: ColumnDef<Session>[] = [
     },
   },
   {
-    accessorKey: "time_remaining",
-    header: "Time Remaining",
+    accessorKey: "time_left",
+    header: "Usage Left",
     cell: ({ row }) => {
-      const plan = row.original.plan;
-      const startTime = new Date(row.original.start_time);
+      const session = row.original;
+      const startTime = new Date(session.start_time);
       const now = new Date();
 
-      if (!plan?.duration_minutes) return "Unlimited";
+      if (session.plan?.minutes) {
+        const elapsedMinutes = differenceInMinutes(now, startTime);
+        const remainingMinutes = session.plan?.minutes - elapsedMinutes;
 
-      const elapsedMinutes = differenceInMinutes(now, startTime);
-      const remainingMinutes = plan.duration_minutes - elapsedMinutes;
+        if (remainingMinutes <= 0) return "Expired";
 
-      if (remainingMinutes <= 0) return "Expired";
+        const hours = Math.floor(remainingMinutes / 60);
+        const minutes = remainingMinutes % 60;
 
-      const hours = Math.floor(remainingMinutes / 60);
-      const minutes = remainingMinutes % 60;
+        return `${hours}h ${minutes}m`;
+      }
 
-      return `${hours}h ${minutes}m`;
+      if (session.plan?.day_passes) {
+        return `${session.subscription?.day_passes} day passes`;
+      }
+
+      if (session.plan?.expiry && session.subscription?.expiry_date) {
+        const expiryDate = new Date(session.subscription.expiry_date);
+        const daysRemaining = differenceInDays(expiryDate, now);
+
+        if (daysRemaining < 0) return "Expired";
+        return `Expires in ${daysRemaining} day${
+          daysRemaining !== 1 ? "s" : ""
+        }`;
+      }
     },
   },
   {
@@ -221,45 +104,10 @@ export const columns: ColumnDef<Session>[] = [
     },
   },
   {
-    accessorKey: "price",
-    header: "Price",
+    accessorKey: "start_time",
+    header: "Start Time",
     cell: ({ row }) => {
-      const price = row.original.price;
-      return price ? (
-        <div className="flex items-center gap-1">
-          <PhilippinePeso className="h-4 w-4" />
-          {price.toLocaleString()}
-        </div>
-      ) : (
-        "N/A"
-      );
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status || "unknown";
-      return (
-        <Badge
-          variant={
-            status === "active"
-              ? "default"
-              : status === "completed"
-              ? "secondary"
-              : "destructive"
-          }
-        >
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created",
-    cell: ({ row }) => {
-      return new Date(row.original.created_at).toLocaleString();
+      return new Date(row.original.start_time).toLocaleString();
     },
   },
   {

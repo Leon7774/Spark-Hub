@@ -24,11 +24,9 @@ import {
 } from "@/components/ui/table";
 import RegisterButton from "./register-button";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
-import { format } from "date-fns";
 import { useDataContext } from "@/context/dataContext";
 import { getPlanById } from "./functions";
+import { Session, SubscriptionPlan } from "../../../lib/schemas";
 
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -40,19 +38,22 @@ export const SessionsTable = () => {
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const {customers, plans, sessions} = useDataContext();
+  const { customers, plans, sessions: rawSessionData } = useDataContext();
 
   // Load sessions from Supabase
   useEffect(() => {
     async function loadData() {
-      let count = 0;
+      const SessionData = await Promise.all(
+        rawSessionData.map(async (session) => {
+          session.plan = await getPlanById(session.plan_id);
 
-      sessions.map((session) => (...row: any, session_type = plans.find(session.)))
+          return session;
+        })
+      );
 
-      setData(sessions || []);
+      // Input data doesnt match given interface yet
+      setData(SessionData);
     }
-
-    
 
     loadData();
   }, []);
