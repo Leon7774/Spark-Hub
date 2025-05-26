@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { SubscriptionTypes } from "@/utils/types";
+import { SubscriptionTypes } from "@/lib/schemas";
 import { PlanType } from "@/app/api/plans";
 import { Select } from "@/components/ui/select";
 import {
@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/select";
 import clsx from "clsx";
 import { PhilippinePeso } from "lucide-react";
-import { TimePicker12Demo } from "./time-picker";
 import { time } from "console";
 
 // This is the schema for the Subsription Plans

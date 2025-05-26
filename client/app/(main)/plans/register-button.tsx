@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import RegisterPlanForm from "./register-plan";
+import { Plus } from "lucide-react";
 
 export const RegisterButton = () => {
   const [open, setOpen] = useState(false);
@@ -18,7 +19,10 @@ export const RegisterButton = () => {
       <div className="flex gap-4">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="mb-2">Create Subscription Plan</Button>
+            <Button className="mb-2">
+              <Plus></Plus>
+              Create Subscription Plan
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader className="pt-5">
