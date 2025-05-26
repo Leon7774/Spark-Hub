@@ -174,7 +174,7 @@ export function SubscriptionPlansTable<TData, TValue>({
               Active
             </Badge>
             <span className="text-2xl font-bold">
-              {data.filter((plan: any) => plan.active).length}
+              {data.filter((plan: any) => plan.is_active).length}
             </span>
           </div>
         </div>
@@ -182,7 +182,7 @@ export function SubscriptionPlansTable<TData, TValue>({
           <div className="flex items-center gap-2">
             <Badge variant="secondary">Inactive</Badge>
             <span className="text-2xl font-bold">
-              {data.filter((plan: any) => !plan.active).length}
+              {data.filter((plan: any) => !plan.is_active).length}
             </span>
           </div>
         </div>

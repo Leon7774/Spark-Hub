@@ -35,8 +35,8 @@ export const customerSchema = z.object({
 
 export const subscriptionPlanSchema = z.object({
   id: z.number(),
-  name: z.string(),
-  is_active: z.boolean(),
+  name: z.string().min(1, "Plan name is required"),
+  is_active: z.boolean().default(true),
   price: z.number(),
   plan_type: z.enum(["straight", "bundle", "hourly"]),
   time_included: z.number().nullable(),

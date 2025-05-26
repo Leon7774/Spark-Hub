@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { subscriptionPlanSchema, SubscriptionTypes } from "@/lib/schemas";
+import { subscriptionPlanSchema } from "@/lib/schemas";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
@@ -8,15 +8,31 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase.from("subscription_plans").select("*");
   if (error || !data) {
-    return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    return NextResponse.json({ error: "Plans not found" }, { status: 404 });
   }
 
-  console.log(data);
-  console.log(SubscriptionTypes.safeParse(data[0]).error);
+  // Transform and validate the data
+  const validatedPlans = data
+    .map((plan) => {
+      try {
+        return subscriptionPlanSchema.parse({
+          ...plan,
+          created_at: plan.created_at ? new Date(plan.created_at) : null,
+        });
+      } catch (error) {
+        console.error("Invalid plan data:", error);
+        return null;
+      }
+    })
+    .filter(Boolean);
 
-  const parseResult = data.map((data) => {
-    return SubscriptionTypes.safeParse(data);
-  });
+  return NextResponse.json(validatedPlans);
+}
 
-  return NextResponse.json(parseResult); // data is the customer object now
+export async function GET(request: NextRequest, { params }) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("subscription_plans").select("*");
+
+  return NextResponse.json(validatedPlans);
 }

@@ -70,13 +70,13 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     },
   },
   {
-    accessorKey: "active",
+    accessorKey: "is_active",
     header: "Status",
     cell: ({ row }) => {
-      const active = row.getValue("active");
+      const is_active = row.getValue("is_active");
       return (
-        <Badge variant={active ? "default" : "secondary"}>
-          {active ? "Active" : "Inactive"}
+        <Badge variant={is_active ? "default" : "secondary"}>
+          {is_active ? "Active" : "Inactive"}
         </Badge>
       );
     },
@@ -100,10 +100,10 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     },
   },
   {
-    accessorKey: "length",
+    accessorKey: "time_included",
     header: "Duration",
     cell: ({ row }) => {
-      const length = row.getValue("length") as number | undefined;
+      const length = row.getValue("time_included") as number | undefined;
       const plan_type = row.original.plan_type;
       const daysIncluded = row.original.days_included;
 
@@ -112,7 +112,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
       }
 
       if (length) {
-        return <span className="text-sm">{length} days</span>;
+        return <span className="text-sm">{length / 60} hours</span>;
       }
 
       if (daysIncluded) {
@@ -136,7 +136,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
         <div className="flex flex-wrap gap-1">
           {locations.map((location) => (
             <Badge key={location} variant="outline" className="text-xs">
-              {location}
+              {location[0].toUpperCase() + location.slice(1)}
             </Badge>
           ))}
         </div>
@@ -144,13 +144,15 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     },
   },
   {
-    accessorKey: "createdAt",
+    accessorKey: "created_at",
     header: "Created",
     cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
+      const date = row.getValue("created_at") as Date;
+      if (!date) return <div className="text-sm text-gray-600">-</div>;
+
       return (
         <div className="text-sm text-gray-600">
-          {date.toLocaleDateString("en-PH", {
+          {date.toLocaleString("en-PH", {
             year: "numeric",
             month: "short",
             day: "numeric",
