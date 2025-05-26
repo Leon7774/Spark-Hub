@@ -26,7 +26,7 @@ import RegisterButton from "./register-button";
 import { useEffect, useState } from "react";
 import { useDataContext } from "@/context/dataContext";
 import { getPlanById } from "./functions";
-import { Session, SubscriptionPlan } from "../../../lib/schemas";
+import { Session, SubscriptionActive, SubscriptionPlan } from "../../../lib/schemas";
 
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -38,19 +38,22 @@ export const SessionsTable = () => {
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { customers, plans, sessions: rawSessionData } = useDataContext();
+  const { sessions: rawSessionData } = useDataContext();
 
   // Load sessions from Supabase
   useEffect(() => {
     async function loadData() {
       const SessionData = await Promise.all(
-        rawSessionData.map(async (session) => {
-          session.plan = await getPlanById(session.plan_id);
 
-          return session;
+        // Maps the plan data into the session data
+        rawSessionData.map(session => {
+          const plan: SubscriptionPlan = await getPlanById(session.plan_id)
+
+          session.plan?.day_passes = plan.
         })
       );
 
+      setIsLoading(false);
       // Input data doesnt match given interface yet
       setData(SessionData);
     }

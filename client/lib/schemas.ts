@@ -38,9 +38,24 @@ export const subscriptionPlanSchema = z.object({
   name: z.string(),
   active: z.boolean(),
   price: z.number(),
-  length: z.number(),
+  type: z.enum(["straight", "bundle", "hourly"]),
+  length: z.number().optional(),
+  time_valid_start: z
+    .string()
+    .regex(
+      /^([01]\d|2[0-3]):([0-5]\d)$/,
+      "Invalid time format, expected HH:mm"
+    ),
+  time_valid_end: z
+    .string()
+    .regex(
+      /^([01]\d|2[0-3]):([0-5]\d)$/,
+      "Invalid time format, expected HH:mm"
+    ),
   createdAt: z.date(),
-  availableAt: z.array(z.string()), // Or z.array(BranchEnum) if only Obrero/Matina
+  days_included: z.number().optional(),
+  expiry_duration: z.number().optional(),
+  available_at: z.array(z.enum(["Obrero", "Matina"])), // Or z.array(BranchEnum) if only Obrero/Matina
 });
 
 export const subscriptionActiveSchema = z.object({
