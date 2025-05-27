@@ -15,10 +15,8 @@ import {
 import BaseTable from "@/components/ui/base-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { useState } from "react";
 import { format } from "date-fns";
-import { toast } from "sonner";
 
 interface ActionLog {
   id: string;
@@ -31,6 +29,55 @@ interface ActionLog {
     email: string;
   } | null;
 }
+
+// Sample data for the activity log
+const sampleActionLogs: ActionLog[] = [
+  {
+    id: "1",
+    user_id: "user1",
+    action_type: "LOGIN",
+    description: "User logged in",
+    metadata: { ip: "192.168.1.1", browser: "Chrome" },
+    created_at: new Date().toISOString(),
+    user: { email: "john@example.com" },
+  },
+  {
+    id: "2",
+    user_id: "user2",
+    action_type: "CREATE_SESSION",
+    description: "Created new session",
+    metadata: { customer: "Jane Smith", duration: "60min" },
+    created_at: new Date(Date.now() - 3600000).toISOString(),
+    user: { email: "sarah@example.com" },
+  },
+  {
+    id: "3",
+    user_id: "user1",
+    action_type: "UPDATE_PROFILE",
+    description: "Updated user profile",
+    metadata: { field: "name", old: "John", new: "Johnny" },
+    created_at: new Date(Date.now() - 7200000).toISOString(),
+    user: { email: "john@example.com" },
+  },
+  {
+    id: "4",
+    user_id: "user3",
+    action_type: "DELETE_SESSION",
+    description: "Deleted session",
+    metadata: { session_id: "sess_123", reason: "cancelled" },
+    created_at: new Date(Date.now() - 10800000).toISOString(),
+    user: { email: "mike@example.com" },
+  },
+  {
+    id: "5",
+    user_id: "user2",
+    action_type: "ADD_NOTE",
+    description: "Added session notes",
+    metadata: { session_id: "sess_456", note_length: "150 chars" },
+    created_at: new Date(Date.now() - 14400000).toISOString(),
+    user: { email: "sarah@example.com" },
+  },
+];
 
 const columns: ColumnDef<ActionLog>[] = [
   {
@@ -81,47 +128,10 @@ export function ActionLogsTable() {
     []
   );
   const [rowSelection, setRowSelection] = React.useState({});
-  const [data, setData] = useState<ActionLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load data from Supabase
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const supabase = createClient();
-
-        // Get action logs with user email
-        const { data: logs, error } = await supabase
-          .from("action_logs")
-          .select(
-            `
-            *,
-            user:user_id (
-              email
-            )
-          `
-          )
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          throw error;
-        }
-
-        setData(logs || []);
-      } catch (error) {
-        console.error("Error loading action logs:", error);
-        toast.error("Failed to load action logs");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadData();
-  }, []);
 
   const table = useReactTable({
     columns,
-    data,
+    data: sampleActionLogs,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,

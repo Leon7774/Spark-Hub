@@ -46,17 +46,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
           plansRes.json(),
           sessionsRes.json(),
         ]);
+
         setCustomers(customersData);
         setPlans(plansData);
         setSessions(sessionsData);
       } catch (e) {
-        console.log(e);
+        console.error("Error fetching data:", e);
       } finally {
         setLoading(false);
       }
     }
-
-    console.log(plans);
 
     fetchData();
   }, []);

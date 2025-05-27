@@ -23,9 +23,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import RegisterButton from "./register-button";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useDataContext } from "@/context/dataContext";
 import { Session } from "../../../lib/schemas";
+import { Badge } from "@/components/ui/badge";
+import { differenceInMinutes } from "date-fns";
+import { enrichSessions } from "./enrich";
 
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -37,28 +40,12 @@ export const SessionsTable = () => {
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { sessions: rawSessionData } = useDataContext();
+  const { sessions: rawSessionData, loading } = useDataContext();
 
-  // // Load sessions from Supabase
-  // useEffect(() => {
-  //   async function loadData() {
-  //     const SessionData = await Promise.all(
-
-  //       // Maps the plan data into the session data
-  //       rawSessionData.map(session => {
-  //         const plan: SubscriptionPlan = await getPlanById(session.plan_id)
-
-  //         session.plan?.day_passes = plan.
-  //       })
-  //     );
-
-  //     setIsLoading(false);
-  //     // Input data doesnt match given interface yet
-  //     setData(SessionData);
-  //   }
-
-  //   loadData();
-  // }, []);
+  useEffect(() => {
+    setData(rawSessionData);
+    console.log(rawSessionData);
+  }, [loading]);
 
   const table = useReactTable({
     data,
@@ -81,6 +68,125 @@ export const SessionsTable = () => {
 
   return (
     <div className="w-full">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        {/* Total Sessions Today */}
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="default">Total Today</Badge>
+            <span className="text-2xl font-bold">
+              {
+                data.filter((s: Session) => {
+                  const start = new Date(s.start_time);
+                  const now = new Date();
+                  return (
+                    start.getDate() === now.getDate() &&
+                    start.getMonth() === now.getMonth() &&
+                    start.getFullYear() === now.getFullYear()
+                  );
+                }).length
+              }
+            </span>
+          </div>
+        </div>
+
+        {/* Ongoing Sessions Today */}
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="bg-green-100 text-green-800">
+              Ongoing
+            </Badge>
+            <span className="text-2xl font-bold">
+              {
+                data.filter((s: Session) => {
+                  const now = new Date();
+                  const start = new Date(s.start_time);
+                  const end = s.end_time ? new Date(s.end_time) : null;
+                  const isToday =
+                    start.getDate() === now.getDate() &&
+                    start.getMonth() === now.getMonth() &&
+                    start.getFullYear() === now.getFullYear();
+                  return isToday && !end;
+                }).length
+              }
+            </span>
+          </div>
+        </div>
+
+        {/* Ended Sessions Today */}
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">Ended</Badge>
+            <span className="text-2xl font-bold">
+              {
+                data.filter((s: Session) => {
+                  const end = s.end_time ? new Date(s.end_time) : null;
+                  const now = new Date();
+                  return (
+                    end &&
+                    end.getDate() === now.getDate() &&
+                    end.getMonth() === now.getMonth() &&
+                    end.getFullYear() === now.getFullYear()
+                  );
+                }).length
+              }
+            </span>
+          </div>
+        </div>
+
+        {/* Branch Sessions - Combined in one card */}
+        <div className="rounded-lg border p-3">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">Branch Sessions</Badge>
+            </div>
+            <div className="flex justify-between">
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground">Obrero</span>
+                <span className="text-xl font-bold">
+                  {
+                    data.filter((s: Session) => {
+                      const now = new Date();
+                      const start = new Date(s.start_time);
+                      const end = s.end_time ? new Date(s.end_time) : null;
+                      const isToday =
+                        start.getDate() === now.getDate() &&
+                        start.getMonth() === now.getMonth() &&
+                        start.getFullYear() === now.getFullYear();
+                      return (
+                        isToday &&
+                        !end &&
+                        s.branch?.toLowerCase().includes("obrero")
+                      );
+                    }).length
+                  }
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm text-muted-foreground">Matina</span>
+                <span className="text-xl font-bold">
+                  {
+                    data.filter((s: Session) => {
+                      const now = new Date();
+                      const start = new Date(s.start_time);
+                      const end = s.end_time ? new Date(s.end_time) : null;
+                      const isToday =
+                        start.getDate() === now.getDate() &&
+                        start.getMonth() === now.getMonth() &&
+                        start.getFullYear() === now.getFullYear();
+                      return (
+                        isToday &&
+                        !end &&
+                        s.branch?.toLowerCase().includes("matina")
+                      );
+                    }).length
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between py-4">
         <RegisterButton />
         <div className="flex items-center gap-2">
@@ -94,7 +200,8 @@ export const SessionsTable = () => {
             }
             className="max-w-sm"
           />
-          <Input
+          {/* TODO IMPLEMENT PLAN TYPE FILTER */}
+          {/* <Input
             placeholder="Filter by type..."
             value={
               (table.getColumn("session_type")?.getFilterValue() as string) ??
@@ -106,7 +213,7 @@ export const SessionsTable = () => {
                 ?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
-          />
+          /> */}
         </div>
       </div>
       <div className="rounded-md border">
@@ -130,7 +237,7 @@ export const SessionsTable = () => {
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {loading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

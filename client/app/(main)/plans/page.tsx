@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { SubscriptionPlansTable } from "./data-table";
-import { columns, subscriptionPlans } from "./columns";
+import { columns } from "./columns";
 import { useDataContext } from "@/context/dataContext";
 
 import RegisterButton from "./register-button";

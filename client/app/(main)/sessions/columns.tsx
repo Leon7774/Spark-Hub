@@ -39,14 +39,7 @@ export const columns: ColumnDef<Session>[] = [
       return format(new Date(row.original.start_time), "MMM d, h:mm a");
     },
   },
-  {
-    accessorKey: "end_time",
-    header: "End Time",
-    cell: ({ row }) => {
-      const endTime = row.original.end_time;
-      return endTime ? new Date(endTime).toLocaleString() : "Ongoing";
-    },
-  },
+
   {
     accessorKey: "time_left",
     header: "Usage Left",
@@ -101,13 +94,6 @@ export const columns: ColumnDef<Session>[] = [
     header: "Branch",
     cell: ({ row }) => {
       return row.original.branch;
-    },
-  },
-  {
-    accessorKey: "start_time",
-    header: "Start Time",
-    cell: ({ row }) => {
-      return new Date(row.original.start_time).toLocaleString();
     },
   },
   {
