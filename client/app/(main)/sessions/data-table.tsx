@@ -23,12 +23,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import RegisterButton from "./register-button";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDataContext } from "@/context/dataContext";
 import { Session } from "../../../lib/schemas";
 import { Badge } from "@/components/ui/badge";
-import { differenceInMinutes } from "date-fns";
-import { enrichSessions } from "./enrich";
+import {enrichSessions} from "@/app/(main)/sessions/enrich";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+
 
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -39,11 +40,10 @@ export const SessionsTable = () => {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = useState<Session[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { sessions: rawSessionData, loading } = useDataContext();
+  const { sessions: rawSessionData, loading, plans, customers } = useDataContext();
 
   useEffect(() => {
-    setData(rawSessionData);
+    setData(enrichSessions(rawSessionData, customers, plans));
     console.log(rawSessionData);
   }, [loading]);
 
@@ -155,7 +155,7 @@ export const SessionsTable = () => {
                       return (
                         isToday &&
                         !end &&
-                        s.branch?.toLowerCase().includes("obrero")
+                        s.branch?.includes("obrero")
                       );
                     }).length
                   }
@@ -176,7 +176,7 @@ export const SessionsTable = () => {
                       return (
                         isToday &&
                         !end &&
-                        s.branch?.toLowerCase().includes("matina")
+                        s.branch?.includes("matina")
                       );
                     }).length
                   }
@@ -214,6 +214,18 @@ export const SessionsTable = () => {
             }
             className="max-w-sm"
           /> */}
+          <Select
+              value={(table.getColumn("branch")?.getFilterValue() as string) || undefined}
+              onValueChange={(value) => table.getColumn("branch")?.setFilterValue(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by location..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="obrero">Obrero</SelectItem>
+              <SelectItem value="matina">Matina</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="rounded-md border">

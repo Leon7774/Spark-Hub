@@ -103,20 +103,36 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     accessorKey: "time_included",
     header: "Duration",
     cell: ({ row }) => {
+      console.log(row.original);
       const length = row.getValue("time_included") as number | undefined;
       const plan_type = row.original.plan_type;
       const daysIncluded = row.original.days_included;
+      const validity = row.original.expiry_duration;
 
       if (plan_type === "hourly") {
         return <span className="text-gray-400 text-sm">Per hour</span>;
       }
 
       if (length) {
-        return <span className="text-sm">{length / 60} hours</span>;
+        return (
+          <div className={"flex flex-col"}>
+            <span className="text-sm">{length / 60} hours</span>
+            {validity && (
+              <span className="text-gray-400 text-xs">
+                {validity} days valid
+              </span>
+            )}
+          </div>
+        );
       }
 
       if (daysIncluded) {
-        return <span className="text-sm">{daysIncluded} days</span>;
+        return (
+          <div className={"flex flex-col"}>
+            <span className="text-sm">{daysIncluded} day-passes</span>
+            <span className="text-gray-400 text-xs">{validity} days valid</span>
+          </div>
+        );
       }
 
       return <span className="text-gray-400 text-sm">-</span>;

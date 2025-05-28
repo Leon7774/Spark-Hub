@@ -1,4 +1,3 @@
-import { PlanType } from "@/app/api/plans";
 import { z } from "zod";
 
 /* ───────────────────────────────
@@ -6,8 +5,8 @@ import { z } from "zod";
 ─────────────────────────────── */
 export const SubscriptionTypes = z.enum(["bundle", "straight", "hourly"]);
 export type SubscriptionType = z.infer<typeof SubscriptionTypes>;
+export const BranchEnum = z.enum(["obrero", "matina"]);
 
-export const BranchEnum = z.enum(["Obrero", "Matina"]);
 export type Branch = z.infer<typeof BranchEnum>;
 
 export const ActionEnum = z.enum([
@@ -54,7 +53,7 @@ export const subscriptionPlanSchema = z.object({
     .nullable(),
   days_included: z.number().nullable(),
   expiry_duration: z.number().nullable(),
-  available_at: z.array(z.enum(["obrero", "matina"])), // Or z.array(BranchEnum) if only Obrero/Matina
+  available_at: z.array(BranchEnum), // Or z.array(BranchEnum) if only Obrero/Matina
 });
 
 export const subscriptionActiveSchema = z.object({
@@ -88,14 +87,13 @@ export const sessionSchema = z.object({
   start_time: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
   end_time: z.preprocess((val) => new Date(val as string), z.date()).nullable(),
   time_left: z.number().nullable(),
-  branch: BranchEnum,
+  branch: z.enum(BranchEnum.options), // Or z.array(BranchEnum) if only Obrero/Matina(),
   customer: z
     .object({
       first_name: z.string(),
       last_name: z.string(),
     })
-    .optional()
-    .nullable(),
+    .nullable().optional(),
   plan: z
     .object({
       name: z.string(),
@@ -110,7 +108,7 @@ export const sessionSchema = z.object({
     })
     .optional()
     .nullable(),
-  plan_type: z.enum(["straight", "bundle", "hourly"]),
+  plan_type: z.enum(SubscriptionTypes.options).optional().nullable(),
   subscription: z
     .object({
       time_left: z.number().optional(),

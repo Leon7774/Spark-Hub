@@ -55,14 +55,14 @@ const planFormSchema = z
       .string()
       .regex(
         /^([01]\d|2[0-3]):([0-5]\d)$/,
-        "Invalid time format, expected HH:mm"
+        "Invalid time format, expected HH:mm",
       )
       .nullable(),
     time_valid_end: z
       .string()
       .regex(
         /^([01]\d|2[0-3]):([0-5]\d)$/,
-        "Invalid time format, expected HH:mm"
+        "Invalid time format, expected HH:mm",
       )
       .nullable(),
     created_at: z.string().nullable(),
@@ -80,7 +80,7 @@ const planFormSchema = z
     {
       message: "Day passes and expiry duration are required for bundle plans",
       path: ["days_included", "expiry_duration"],
-    }
+    },
   );
 
 type PlanFormValues = z.infer<typeof planFormSchema>;
@@ -122,9 +122,8 @@ export default function RegisterPlanForm({
   async function handleConfirm(values: PlanFormValues) {
     setLoading(true);
     console.log("Trying to register", values);
-    dialogOpenSet(false);
-    setShowDialog(false);
-    await fetch("/api/subscription_plans", {
+
+    await fetch("../api/plan", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -133,6 +132,8 @@ export default function RegisterPlanForm({
         ...values,
       }),
     });
+    dialogOpenSet(false);
+    setShowDialog(false);
   }
 
   return (
@@ -386,7 +387,7 @@ export default function RegisterPlanForm({
                 "transition-all duration-300 grid grid-cols-2 gap-x-2",
                 isLimited === true
                   ? "opacity-100 max-h-40"
-                  : "opacity-0 max-h-0"
+                  : "opacity-0 max-h-0",
               )}
             >
               <div>

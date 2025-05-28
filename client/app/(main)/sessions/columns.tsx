@@ -93,9 +93,20 @@ export const columns: ColumnDef<Session>[] = [
     accessorKey: "branch",
     header: "Branch",
     cell: ({ row }) => {
-      return row.original.branch;
+      const branch = row.original.branch.toLowerCase();
+
+      let colorClass = "text-black";
+
+      if (branch === "obrero") colorClass = "bg-red -300";
+      else if (branch === "matina") colorClass = "bg-lime-300";
+
+      // Capitalize first letter
+      const displayName = branch.charAt(0).toUpperCase() + branch.slice(1);
+
+      return <div className={colorClass + " font-bold text-center shadow-md rounded "}><span className={colorClass}>{displayName}</span></div>;
     },
   },
+
   {
     id: "actions",
     enableHiding: false,
@@ -116,7 +127,7 @@ export const columns: ColumnDef<Session>[] = [
           <DropdownMenuContent align="end" className="bg-white">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={() => navigator.clipboard.writeText(payment.id.toString())}
             >
               Copy payment ID
             </DropdownMenuItem>

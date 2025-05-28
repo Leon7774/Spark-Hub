@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { SubscriptionPlansTable } from "./data-table";
 import { columns } from "./columns";
 import { useDataContext } from "@/context/dataContext";
