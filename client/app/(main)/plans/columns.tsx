@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Clock, MapPin } from "lucide-react";
 import { SubscriptionPlan } from "@/lib/schemas";
+import { format, formatISO } from "date-fns";
 
 export const columns: ColumnDef<SubscriptionPlan>[] = [
   {
@@ -168,11 +169,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
 
       return (
         <div className="text-sm text-gray-600">
-          {date.toLocaleString("en-PH", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
+          {format(new Date(date), "PPPppp")}
         </div>
       );
     },
@@ -197,9 +194,25 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
               <DropdownMenuItem>View subscribers</DropdownMenuItem>
               <DropdownMenuItem>View analytics</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                {row.original.is_active ? "Deactivate" : "Activate"}
-              </DropdownMenuItem>
+              {row.original.is_active && (
+                <DropdownMenuItem
+                  onClick={() => handleDeactivate(row)}
+                  className="text-red-600"
+                >
+                  Deactivate
+                </DropdownMenuItem>
+              )}
+              {/* If the plan is not active, show the reactivate and delete option*/}
+              {!row.original.is_active && (
+                <>
+                  <DropdownMenuItem className="text-blue-500">
+                    Reactivate
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-600">
+                    Delete Plan
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

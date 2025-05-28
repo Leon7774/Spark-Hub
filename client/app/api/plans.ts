@@ -20,6 +20,7 @@ export enum PlanType {
   HOURLY = "hourly",
   STRAIGHT = "straight",
   BUNDLE = "bundle",
+  TIMED = "timed"
 }
 
 export type Plan = z.infer<typeof PlanSchema>;

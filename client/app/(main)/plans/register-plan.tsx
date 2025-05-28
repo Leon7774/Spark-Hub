@@ -38,8 +38,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import clsx from "clsx";
 import { PhilippinePeso } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const planFormSchema = z
   .object({
@@ -49,7 +50,7 @@ const planFormSchema = z
     price: z
       .number({ message: "Please enter a number" })
       .min(1, "Price is required"),
-    plan_type: z.enum(["straight", "bundle", "hourly"]),
+    plan_type: z.enum(["straight", "bundle", "hourly", "timed"]),
     time_included: z.number().nullable(),
     time_valid_start: z
       .string()
@@ -68,20 +69,103 @@ const planFormSchema = z
     created_at: z.string().nullable(),
     days_included: z.number().min(0).nullable(),
     expiry_duration: z.number().min(0).nullable(),
-    available_at: z.array(z.enum(["obrero", "matina"])),
+    available_at: z
+      .array(z.enum(["obrero", "matina"]))
+      .min(1, "At least one branch must be selected"),
   })
-  .refine(
-    (data) => {
-      if (data.plan_type === "bundle") {
-        return data.days_included !== null && data.expiry_duration !== null;
+  .superRefine((data, ctx) => {
+    // Common validations for all plan types
+    if (!data.name) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Plan name is required",
+        path: ["name"],
+      });
+    }
+
+    if (!data.price || data.price <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Price must be greater than 0",
+        path: ["price"],
+      });
+    }
+
+    // Plan type specific validations
+    if (data.plan_type === "bundle") {
+      const hasDays = data.days_included !== null && data.days_included > 0;
+      const hasTime = data.time_included !== null && data.time_included > 0;
+      const hasExpiry =
+        data.expiry_duration !== null && data.expiry_duration > 0;
+
+      if (hasDays && hasTime) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Cannot have both days and time included for bundle plans",
+          path: ["days_included"],
+        });
       }
-      return true;
-    },
-    {
-      message: "Day passes and expiry duration are required for bundle plans",
-      path: ["days_included", "expiry_duration"],
-    },
-  );
+
+      if (!hasDays && !hasTime) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Either days or time must be included for bundle plans",
+          path: ["days_included"],
+        });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Either days or time must be included for bundle plans",
+          path: ["time_included"],
+        });
+      }
+
+      if (!hasExpiry) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Expiry duration is required for bundle plans",
+          path: ["expiry_duration"],
+        });
+      }
+    } else if (data.plan_type === "timed") {
+      // Always require time for timed plans
+      if (!data.time_valid_start) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Start time is required for timed plans",
+          path: ["time_valid_start"],
+        });
+      }
+
+      if (!data.time_valid_end) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "End time is required for timed plans",
+          path: ["time_valid_end"],
+        });
+      }
+
+      if (data.time_valid_start && data.time_valid_end) {
+        const start = new Date(`1970-01-01T${data.time_valid_start}`);
+        const end = new Date(`1970-01-01T${data.time_valid_end}`);
+
+        if (start >= end) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "End time must be after start time",
+            path: ["time_valid_end"],
+          });
+        }
+      }
+    } else if (data.plan_type === "straight" || data.plan_type === "hourly") {
+      if (data.time_included === null || data.time_included <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Time included is required",
+          path: ["time_included"],
+        });
+      }
+    }
+  });
 
 type PlanFormValues = z.infer<typeof planFormSchema>;
 
@@ -93,9 +177,26 @@ export default function RegisterPlanForm({
 }) {
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [planType, setPlanType] = useState<PlanType | undefined>(undefined);
-  const [isLimited, setLimited] = useState<boolean>(false);
   const [bundleIsTimeIncluded, setBundleIsTimeIncluded] = useState(false);
+
+  function handlePlanTypeChange(type: PlanType) {
+    // Reset relevant fields when plan type changes
+    form.setValue("time_included", null);
+    form.setValue("days_included", null);
+    form.setValue("expiry_duration", null);
+    form.setValue("time_valid_start", null);
+    form.setValue("time_valid_end", null);
+    // setShowTimeWarning(false);
+
+    // Clear any existing errors
+    form.clearErrors([
+      "time_included",
+      "days_included",
+      "expiry_duration",
+      "time_valid_start",
+      "time_valid_end",
+    ]);
+  }
 
   const form = useForm<PlanFormValues>({
     resolver: zodResolver(planFormSchema),
@@ -115,26 +216,106 @@ export default function RegisterPlanForm({
     },
   });
 
-  async function onSubmit() {
+  const planType = form.watch("plan_type");
+
+  async function onSubmit(values: PlanFormValues) {
+    // This function will only be called if validation passes
+
+    console.log("Form is valid, showing dialog with values:", values);
     setShowDialog(true);
   }
 
   async function handleConfirm(values: PlanFormValues) {
     setLoading(true);
+    values.created_at = new Date().toISOString();
     console.log("Trying to register", values);
 
-    await fetch("../api/plan", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...values,
-      }),
-    });
-    dialogOpenSet(false);
-    setShowDialog(false);
+    try {
+      const response = await fetch("../api/plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Reset the form
+      form.reset({
+        id: 0,
+        name: "",
+        is_active: true,
+        price: 0,
+        plan_type: "straight",
+        time_included: null,
+        time_valid_start: null,
+        time_valid_end: null,
+        created_at: null,
+        days_included: null,
+        expiry_duration: null,
+        available_at: ["obrero"],
+      });
+
+      // Reset local state
+      setPlanType(undefined);
+      setBundleIsTimeIncluded(false);
+
+      dialogOpenSet(false);
+      setShowDialog(false);
+      toast.success("Plan created successfully!");
+    } catch (error) {
+      console.error("Error creating plan:", error);
+      toast.error("Failed to create plan. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
+
+  // async function handleConfirm(values: PlanFormValues) {
+  //   setLoading(true);
+  //   console.log("Trying to register", values);
+  //   try {
+  //     await fetch("../api/plan", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(values),
+  //     });
+  //
+  //     // Reset the form
+  //     form.reset({
+  //       id: 0,
+  //       name: "",
+  //       is_active: true,
+  //       price: 0,
+  //       plan_type: "straight",
+  //       time_included: null,
+  //       time_valid_start: null,
+  //       time_valid_end: null,
+  //       created_at: null,
+  //       days_included: null,
+  //       expiry_duration: null,
+  //       available_at: ["obrero"],
+  //     });
+  //
+  //     // Reset local state
+  //     setPlanType(undefined);
+  //     setBundleIsTimeIncluded(false);
+  //
+  //     dialogOpenSet(false);
+  //     setShowDialog(false);
+  //     toast.success("Plan created successfully!");
+  //   } catch (error) {
+  //     console.error("Error creating plan:", error);
+  //     toast.error("Failed to create plan. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
 
   return (
     <Form {...form}>
@@ -204,7 +385,7 @@ export default function RegisterPlanForm({
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
-                      setPlanType(value as PlanType);
+                      handlePlanTypeChange(value as PlanType);
                     }}
                     value={field.value}
                   >
@@ -215,6 +396,7 @@ export default function RegisterPlanForm({
                       <SelectItem value="bundle">Bundle</SelectItem>
                       <SelectItem value="straight">Straight</SelectItem>
                       <SelectItem value="hourly">Hourly</SelectItem>
+                      <SelectItem value="timed">Timed</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -350,72 +532,121 @@ export default function RegisterPlanForm({
                       value={field.value ?? ""}
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="expiry_duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Valid For (Days)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter validity in days"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      value={field.value ?? ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
           </div>
         )}
-
-        <div className="flex flex-col gap-y-2">
-          <div className="flex items-center gap-x-4">
-            <span className="text-sm font-medium">Time-Limited</span>
-            <Switch checked={isLimited} onCheckedChange={setLimited}></Switch>
-          </div>
-          <div>
-            <div
-              className={clsx(
-                "transition-all duration-300 grid grid-cols-2 gap-x-2",
-                isLimited === true
-                  ? "opacity-100 max-h-40"
-                  : "opacity-0 max-h-0",
+        {/* Time Fields for Timed Plan */}
+        {planType === "timed" && (
+          <div className="grid grid-cols-2 gap-x-4">
+            <FormField
+              control={form.control}
+              name="time_valid_start"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Time *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="time"
+                      {...field}
+                      value={field.value ?? ""}
+                      className={
+                        form.formState.errors.time_valid_start
+                          ? "border-red-500"
+                          : ""
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
               )}
-            >
-              <div>
-                <span>Start Time</span>
-                <FormField
-                  control={form.control}
-                  name="time_valid_start"
-                  render={({ field }) => (
-                    <Input type="time" {...field} value={field.value ?? ""} />
-                  )}
-                />
-              </div>
-              <div>
-                <span>End Time</span>
-                <FormField
-                  control={form.control}
-                  name="time_valid_end"
-                  render={({ field }) => (
-                    <Input type="time" {...field} value={field.value ?? ""} />
-                  )}
-                />
-              </div>
-            </div>
+            />
+            <FormField
+              control={form.control}
+              name="time_valid_end"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Time *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="time"
+                      {...field}
+                      value={field.value ?? ""}
+                      className={
+                        form.formState.errors.time_valid_end
+                          ? "border-red-500"
+                          : ""
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
           </div>
+        )}
+        {/* Branch Selection */}
+        <div className="space-y-2">
+          <FormLabel>Available at Branches</FormLabel>
+          <FormField
+            control={form.control}
+            name="available_at"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="obrero"
+                      checked={field.value?.includes("obrero")}
+                      onCheckedChange={(checked) => {
+                        const newValue = checked
+                          ? [...(field.value || []), "obrero"]
+                          : field.value?.filter((v) => v !== "obrero") || [];
+                        field.onChange(newValue);
+                      }}
+                    />
+                    <Label htmlFor="obrero" className="font-normal">
+                      Obrero
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="matina"
+                      checked={field.value?.includes("matina")}
+                      onCheckedChange={(checked) => {
+                        const newValue = checked
+                          ? [...(field.value || []), "matina"]
+                          : field.value?.filter((v) => v !== "matina") || [];
+                        field.onChange(newValue);
+                      }}
+                    />
+                    <Label htmlFor="matina" className="font-normal">
+                      Matina
+                    </Label>
+                  </div>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        <div className="flex justify-end z-10">
-          <Button type="submit" disabled={isLoading} className="z-40">
+        <div className="flex justify-end z-40">
+          <Button
+            onClick={async () => {
+              const isValid = await form.trigger(); // Manually trigger validation
+              console.log("Manual validation result:", isValid);
+              console.log("Manual validation errors:", form.formState.errors);
+              if (isValid) {
+                console.log("Form values (manual):", form.getValues());
+              }
+            }}
+            type="submit"
+            disabled={isLoading}
+            className="z-100"
+          >
             {isLoading ? "Registering..." : "Register"}
           </Button>
           <Button
@@ -424,9 +655,22 @@ export default function RegisterPlanForm({
             variant={"outline"}
             disabled={isLoading}
             onClick={() => {
-              form.reset();
+              form.reset({
+                id: 0,
+                name: "",
+                is_active: true,
+                price: 0,
+                plan_type: "straight",
+                time_included: null,
+                time_valid_start: null,
+                time_valid_end: null,
+                created_at: null,
+                days_included: null,
+                expiry_duration: null,
+                available_at: ["obrero", "matina"],
+              });
               setPlanType(undefined);
-              setLimited(false);
+              setBundleIsTimeIncluded(false);
               toast("Form has been cleared");
             }}
           >
@@ -460,15 +704,6 @@ export default function RegisterPlanForm({
                       <span className="font-semibold">Price:</span> ₱
                       {form.getValues("price")}
                     </p>
-                    {isLimited && (
-                      <>
-                        <p>
-                          <span className="font-semibold">Valid Hours:</span>{" "}
-                          {form.getValues("time_valid_start")} -{" "}
-                          {form.getValues("time_valid_end")}
-                        </p>
-                      </>
-                    )}
                   </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
