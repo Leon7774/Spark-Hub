@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
     // validateData(data, sessionSchema);
     validateSession(data);
-    console.log("Trying to log");
+    // console.log("Trying to log");
     return NextResponse.json(data);
   }
 }
@@ -41,7 +41,7 @@ function validateSession(session: Session[]) {
     try {
       sessionSchema.parse(session);
     } catch (error) {
-      console.error("Invalid session data:", error);
+      // console.error("Invalid session data:", error);
       return null;
     }
   });

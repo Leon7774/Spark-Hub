@@ -1,80 +1,106 @@
-"use client";
-
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { subscriptionActiveSchema } from "@/lib/schemas";
+import { z } from "zod";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// Common cell style for consistent alignment
+const cellStyle = "px-4 py-3 text-sm";
 
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
-import { SubscriptionActive } from "@/lib/schemas";
-
-// Columns Definition
-export const columns: ColumnDef<SubscriptionActive>[] = [
+export const columns: ColumnDef<z.infer<typeof subscriptionActiveSchema>>[] = [
   {
     accessorKey: "id",
-    header: () => <div className="text-center pl-0.5 bg-gray-100">ID</div>,
+    header: () => <div className="text-center">ID</div>,
     cell: ({ row }) => (
-      <div className="text-center bg-gray-100">{row.getValue("id")}</div>
+      <div className={`${cellStyle} text-center font-mono`}>
+        {row.getValue("id")}
+      </div>
     ),
-    size: 5,
-    minSize: 0,
+    size: 10,
   },
   {
-    accessorKey: "customer_id",
-    header: "Customer ID",
+    accessorKey: "customer_name",
+    header: () => <div className="text-left">Customer ID</div>,
+    cell: ({ row }) => (
+      <div className={`${cellStyle} text-left font-mono`}>
+        {row.original.customer?.first_name}
+        {row.original.customer?.last_name}
+      </div>
+    ),
+    size: 120,
   },
   {
-    accessorKey: "plan_id",
-    header: "Plan Name",
-    // cell: (info: any) =>
-    //   // Get the value of the plan - not yet implemented
-    //   subscriptionPlans.find((plan) => plan.id === info.getValue())?.name,
+    accessorKey: "plan_name",
+    header: () => <div className="text-left">Plan Name</div>,
+    cell: ({ row }) => (
+      <div className={`${cellStyle} text-left font-medium`}>
+        {row.getValue("plan_name")}
+      </div>
+    ),
+    size: 150,
   },
   {
-    accessorKey: "expiry",
-    header: "Expiry Date",
-    cell: (info: any) => {
-      try {
-        const expiryDate = new Date(info.getValue());
-        return expiryDate.toLocaleDateString();
-      } catch (error) {
-        return "Invalid Date";
-      }
-    },
-  },
-  {
-    accessorKey: "timeLeft",
-    header: "Time Left (days)",
-  },
-  {
-    id: "actions",
+    accessorKey: "created_at",
+    header: () => <div className="text-left">Started</div>,
     cell: ({ row }) => {
+      const date = row.getValue("created_at") as Date;
       return (
-        <div className="text-right ">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 mr-2">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-2 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem>Copy payment ID</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View customer</DropdownMenuItem>
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className={`${cellStyle} text-left text-gray-600`}>
+          {format(date, "PPp")}
         </div>
       );
     },
+    size: 180,
+  },
+  {
+    accessorKey: "expiry_date",
+    header: () => <div className="text-left">Expires</div>,
+    cell: ({ row }) => {
+      const date = row.getValue("expiry_date") as Date;
+      return (
+        <div className={`${cellStyle} text-left font-medium text-red-600`}>
+          {format(date, "PP")}
+        </div>
+      );
+    },
+    size: 150,
+  },
+  {
+    accessorKey: "time_left",
+    header: () => <div className="text-center">Time Left</div>,
+    cell: ({ row }) => {
+      const value = row.getValue("time_left") as number | null;
+      return (
+        <div className={`${cellStyle} text-center`}>
+          {value != null ? (
+            <span className="font-medium">
+              {Math.floor(value / 60)}h {value % 60}m
+            </span>
+          ) : (
+            <span className="text-gray-400">N/A</span>
+          )}
+        </div>
+      );
+    },
+    size: 120,
+  },
+  {
+    accessorKey: "days_left",
+    header: () => <div className="text-center">Days Left</div>,
+    cell: ({ row }) => {
+      const value = row.getValue("days_left") as number | null;
+      return (
+        <div className={`${cellStyle} text-center`}>
+          {value != null ? (
+            <Badge variant={value <= 3 ? "destructive" : "default"}>
+              {value} {value === 1 ? "day" : "days"}
+            </Badge>
+          ) : (
+            <span className="text-gray-400">N/A</span>
+          )}
+        </div>
+      );
+    },
+    size: 120,
   },
 ];

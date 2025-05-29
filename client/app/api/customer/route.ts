@@ -9,7 +9,8 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.from("customers").select("*");
 
   if (error || !data) {
-    return NextResponse.json({ error: "Customes not found" }, { status: 404 });
+    // console.log(error);
+    return NextResponse.json({ error: "Customers not found" }, { status: 404 });
   }
 
   validateData(data, customerSchema);

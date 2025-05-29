@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Validate the input using Zod schema
     const validated = subscriptionPlanSchema.parse(body);
 
-    console.log("Validated data:", validated);
+    // console.log("Validated data:", validated);
 
     // Insert the validated plan into the database
     const { data, error } = await supabase
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       console.error("Supabase insert error:", error);
       return NextResponse.json(
         { error: "Failed to create plan" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     console.error("Validation or insert error:", err);
     return NextResponse.json(
       { error: err.message || "Invalid input" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }

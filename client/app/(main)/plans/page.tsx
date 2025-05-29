@@ -5,7 +5,7 @@ import { SubscriptionPlansTable } from "./data-table";
 import { columns } from "./columns";
 import useSWR from "swr";
 import RegisterButton from "./register-button";
-import Loading from "./loading";
+import { TableLoading } from "./loading";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -23,8 +23,7 @@ const Page = () => {
         </div>
         <RegisterButton />
       </div>
-
-      {isLoading && <Loading />}
+      {isLoading && <TableLoading />}
       {error && <div className="text-red-500">Failed to load plans.</div>}
       {data && <SubscriptionPlansTable data={data} columns={columns} />}
     </div>

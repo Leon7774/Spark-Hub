@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import RegisterCustomerForm from "./register-customer";
+import useSWR from "swr";
+
+// TODO: Use swr instead of datacontext
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Page() {
   const { customers } = useDataContext();

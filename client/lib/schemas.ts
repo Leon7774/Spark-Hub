@@ -57,12 +57,22 @@ export const subscriptionPlanSchema = z.object({
 });
 
 export const subscriptionActiveSchema = z.object({
-  id: z.number(),
+  id: z.number().optional(),
   created_at: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
   customer_id: z.number(),
   plan_id: z.number(),
-  expiry: z.date(),
-  timeLeft: z.number(),
+  plan_name: z.string(),
+  expiry_date: z
+    .preprocess((val) => new Date(val as string), z.date())
+    .nullable(), // or z.date() if it's ISO format already parsed
+  time_left: z.number().nullable(),
+  days_left: z.number().nullable(),
+  customer: z
+    .object({
+      first_name: z.string(),
+      last_name: z.string(),
+    })
+    .optional(),
 });
 
 export const transactionSchema = z.object({

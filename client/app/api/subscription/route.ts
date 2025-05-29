@@ -1,34 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { validateData } from "@/app/api/validator";
+import { subscriptionActiveSchema } from "@/lib/schemas";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("subscriptions").select("*");
-
-  // If the request body has an id parameter, find the specific subscription
-  if (request.nextUrl.searchParams.get("id")) {
-    const id = request.nextUrl.searchParams.get("id");
-    const { data, error } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error || !data) {
-      return NextResponse.json(
-        { error: "Subscription not found" },
-        { status: 404 },
-      );
-    }
-    return NextResponse.json(data);
-  }
+  console.log("Fetching all subscriptions");
+  const { data, error } = await supabase
+    .from("active_subscriptions")
+    .select("*");
 
   if (error || !data) {
+    console.error(error);
     return NextResponse.json(
       { error: "Subscriptions not found" },
       { status: 404 },
     );
   }
 
-  return NextResponse.json(data);
+  const validatedData = validateData(data, subscriptionActiveSchema);
+
+  console.log(validatedData);
+
+  return NextResponse.json(validatedData);
 }
