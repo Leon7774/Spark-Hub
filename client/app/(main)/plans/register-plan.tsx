@@ -45,7 +45,7 @@ import { Label } from "@/components/ui/label";
 
 const planFormSchema = z
   .object({
-    id: z.number(),
+    id: z.number().optional(),
     name: z.string().min(1, "Plan name is required"),
     is_active: z.boolean(),
     price: z
@@ -202,7 +202,7 @@ export default function RegisterPlanForm({
   const form = useForm<PlanFormValues>({
     resolver: zodResolver(planFormSchema),
     defaultValues: {
-      id: 0,
+      id: undefined,
       name: "",
       is_active: true,
       price: 0,
@@ -228,6 +228,7 @@ export default function RegisterPlanForm({
 
   async function handleConfirm(values: PlanFormValues) {
     setLoading(true);
+    values.id = undefined;
     values.created_at = new Date().toISOString();
     console.log("Trying to register", values);
 
@@ -246,7 +247,7 @@ export default function RegisterPlanForm({
 
       // Reset the form
       form.reset({
-        id: 0,
+        id: undefined,
         name: "",
         is_active: true,
         price: 0,
@@ -261,7 +262,6 @@ export default function RegisterPlanForm({
       });
 
       // Reset local state
-      setPlanType(undefined);
       setBundleIsTimeIncluded(false);
 
       dialogOpenSet(false);

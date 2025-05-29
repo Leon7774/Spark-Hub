@@ -25,7 +25,7 @@ export type Action = z.infer<typeof ActionEnum>;
 ─────────────────────────────── */
 
 export const customerSchema = z.object({
-  id: z.number(),
+  id: z.number().optional(),
   first_name: z.string(),
   last_name: z.string(),
   created_at: z.date(),
@@ -34,7 +34,7 @@ export const customerSchema = z.object({
 });
 
 export const subscriptionPlanSchema = z.object({
-  id: z.number(),
+  id: z.number().optional(),
   name: z.string().min(1, "Plan name is required"),
   is_active: z.boolean().default(true),
   price: z.number(),
@@ -93,7 +93,8 @@ export const sessionSchema = z.object({
       first_name: z.string(),
       last_name: z.string(),
     })
-    .nullable().optional(),
+    .nullable()
+    .optional(),
   plan: z
     .object({
       name: z.string(),
