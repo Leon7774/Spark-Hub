@@ -37,7 +37,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       try {
         const [customersRes, plansRes, sessionsRes] = await Promise.all([
-          fetch("/api/customers"),
+          fetch("/api/customer"),
           fetch("/api/plan"),
           fetch("/api/session"),
         ]);
@@ -51,6 +51,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setPlans(plansData);
         setSessions(sessionsData);
       } catch (e) {
+        console.log(customers, plans, sessions);
         console.error("Error fetching data:", e);
       } finally {
         setLoading(false);

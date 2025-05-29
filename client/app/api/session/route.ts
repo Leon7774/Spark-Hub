@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { sessionSchema, Session } from "@/lib/schemas";
+import { validateData } from "@/app/api/validator";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -17,8 +18,10 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
+
     return NextResponse.json(data);
   } else {
+    console.log("Fetching all sessions");
     const { data, error } = await supabase.from("sessions").select("*");
     if (error || !data) {
       return NextResponse.json(
@@ -26,7 +29,9 @@ export async function GET(request: NextRequest) {
         { status: 404 },
       );
     }
+    // validateData(data, sessionSchema);
     validateSession(data);
+    console.log("Trying to log");
     return NextResponse.json(data);
   }
 }

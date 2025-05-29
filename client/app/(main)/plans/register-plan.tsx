@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { mutate } from "swr";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -271,6 +272,7 @@ export default function RegisterPlanForm({
       toast.error("Failed to create plan. Please try again.");
     } finally {
       setLoading(false);
+      mutate("/api/plan");
     }
   }
 

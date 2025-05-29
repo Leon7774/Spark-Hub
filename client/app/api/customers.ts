@@ -25,9 +25,10 @@ export async function getCustomers(): Promise<Customer[]> {
   return customers;
 }
 
+// TODO: Move customer registartion to API
 export async function registerCustomer(
   first_name: string,
-  last_name: string
+  last_name: string,
 ): Promise<PostgrestError | null> {
   const supabase = await createClient();
 

@@ -1,18 +1,16 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { SubscriptionPlansTable } from "./data-table";
 import { columns } from "./columns";
-import { useDataContext } from "@/context/dataContext";
-
+import useSWR from "swr";
 import RegisterButton from "./register-button";
+import Loading from "./loading";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const Page = () => {
-  const { plans, loading } = useDataContext();
-
-  useEffect(() => {
-    console.log(plans);
-  }, [loading]);
+  const { data, isLoading, error } = useSWR("/api/plan", fetcher);
 
   return (
     <div>
@@ -23,16 +21,12 @@ const Page = () => {
             Manage your subscription plans and pricing.
           </p>
         </div>
-        <RegisterButton></RegisterButton>
+        <RegisterButton />
       </div>
-      {!loading ? (
-        <SubscriptionPlansTable
-          data={plans}
-          columns={columns}
-        ></SubscriptionPlansTable>
-      ) : (
-        <div>Loadig</div>
-      )}
+
+      {isLoading && <Loading />}
+      {error && <div className="text-red-500">Failed to load plans.</div>}
+      {data && <SubscriptionPlansTable data={data} columns={columns} />}
     </div>
   );
 };

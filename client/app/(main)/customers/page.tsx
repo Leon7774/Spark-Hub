@@ -3,7 +3,7 @@
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
-import { Customer, getCustomers } from "@/app/api/customers";
+import { useDataContext } from "@/context/dataContext";
 
 import {
   Dialog,
@@ -13,24 +13,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import RegisterCustomerForm from "./register-customer";
 
 export default function Page() {
-  // const [firstName, setFirstName] = useState("");
-  // const [lastName, setLastName] = useState("");
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { customers } = useDataContext();
   const [open, setOpen] = useState(false);
-
-  // Loads
-  useEffect(() => {
-    async function fetchCustomers() {
-      const data = await getCustomers();
-      setCustomers(data); // This correctly updates the customers state
-    }
-
-    fetchCustomers();
-  }, []);
 
   return (
     <div className="container">

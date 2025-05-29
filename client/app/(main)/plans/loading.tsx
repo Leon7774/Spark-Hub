@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function loading() {
+export default function Loading() {
   return (
     <>
       <h1 className="text-4xl font-black mb-4">Subscription Plans</h1>

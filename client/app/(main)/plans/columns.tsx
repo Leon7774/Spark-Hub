@@ -30,7 +30,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     accessorKey: "name",
     header: "Plan Name",
     cell: ({ row }) => {
-      <div className="font-semibold">{row.getValue("name")}</div>;
+      return <div className="font-semibold">{row.getValue("name")}</div>;
     },
   },
   {
