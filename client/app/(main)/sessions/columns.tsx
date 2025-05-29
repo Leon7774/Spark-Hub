@@ -1,4 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
+import { Clock, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +64,15 @@ export const columns: ColumnDef<Session>[] = [
         return `${session.subscription?.day_passes} day passes`;
       }
 
+      if (session.plan?.type === "hourly") {
+        return (
+          <div className="flex flex-row items-center italic p-2 bg-green-200 rounded-xl gap-2">
+            <Clock size={15}></Clock>
+            Hourly
+          </div>
+        );
+      }
+
       if (session.plan?.expiry && session.subscription?.expiry_date) {
         const expiryDate = new Date(session.subscription.expiry_date);
         const daysRemaining = differenceInDays(expiryDate, now);
@@ -97,13 +106,19 @@ export const columns: ColumnDef<Session>[] = [
 
       let colorClass = "text-black";
 
-      if (branch === "obrero") colorClass = "bg-red -300";
+      if (branch === "obrero") colorClass = "bg-logo";
       else if (branch === "matina") colorClass = "bg-lime-300";
 
       // Capitalize first letter
       const displayName = branch.charAt(0).toUpperCase() + branch.slice(1);
 
-      return <div className={colorClass + " font-bold text-center shadow-md rounded "}><span className={colorClass}>{displayName}</span></div>;
+      return (
+        <div
+          className={colorClass + " font-bold text-center shadow-md rounded"}
+        >
+          <span className={colorClass}>{displayName}</span>
+        </div>
+      );
     },
   },
 
@@ -127,7 +142,9 @@ export const columns: ColumnDef<Session>[] = [
           <DropdownMenuContent align="end" className="bg-white">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id.toString())}
+              onClick={() =>
+                navigator.clipboard.writeText(payment.id.toString())
+              }
             >
               Copy payment ID
             </DropdownMenuItem>

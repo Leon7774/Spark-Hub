@@ -161,7 +161,7 @@ export function SubscriptionPlansTable<TData, TValue>({
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[auto_auto_auto_minmax(400,500px)]">
         <div className="rounded-lg border p-3">
           <div className="flex items-center gap-2">
             <Badge variant="default">Total Plans</Badge>
@@ -188,14 +188,8 @@ export function SubscriptionPlansTable<TData, TValue>({
         </div>
         <div className="rounded-lg border p-3">
           <div className="flex items-center gap-2">
-            <Badge variant="outline">Avg Price</Badge>
-            <span className="text-2xl font-bold">
-              ₱
-              {Math.round(
-                data.reduce((acc: number, plan: any) => acc + plan.price, 0) /
-                  data.length
-              )}
-            </span>
+            <Badge variant="outline">Most Popular</Badge>
+            <span className="text-2xl font-bold">Plan 350</span>
           </div>
         </div>
       </div>

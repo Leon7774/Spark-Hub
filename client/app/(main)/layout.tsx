@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar/Sidebar";
 import { Content } from "@/components/ui/content-wrapper";
 import { UserProvider } from "@/context/userContext";
 import { DataProvider } from "@/context/dataContext";
+import { SWRConfig } from "swr";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

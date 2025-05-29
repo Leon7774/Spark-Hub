@@ -29,9 +29,9 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
   {
     accessorKey: "name",
     header: "Plan Name",
-    cell: ({ row }) => (
-      <div className="font-semibold">{row.getValue("name")}</div>
-    ),
+    cell: ({ row }) => {
+      <div className="font-semibold">{row.getValue("name")}</div>;
+    },
   },
   {
     accessorKey: "plan_type",
