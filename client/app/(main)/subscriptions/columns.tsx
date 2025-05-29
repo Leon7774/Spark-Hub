@@ -5,12 +5,12 @@ import { subscriptionActiveSchema } from "@/lib/schemas";
 import { z } from "zod";
 
 // Common cell style for consistent alignment
-const cellStyle = "px-4 py-3 text-sm";
+const cellStyle = "p-2 text-sm";
 
 export const columns: ColumnDef<z.infer<typeof subscriptionActiveSchema>>[] = [
   {
     accessorKey: "id",
-    header: () => <div className="text-center">ID</div>,
+    header: () => <div className="text-center pr-2">ID</div>,
     cell: ({ row }) => (
       <div className={`${cellStyle} text-center font-mono`}>
         {row.getValue("id")}
@@ -67,11 +67,11 @@ export const columns: ColumnDef<z.infer<typeof subscriptionActiveSchema>>[] = [
   },
   {
     accessorKey: "time_left",
-    header: () => <div className="text-center">Time Left</div>,
+    header: () => <div>Time Left</div>,
     cell: ({ row }) => {
       const value = row.getValue("time_left") as number | null;
       return (
-        <div className={`${cellStyle} text-center`}>
+        <div className={`${cellStyle}`}>
           {value != null ? (
             <span className="font-medium">
               {Math.floor(value / 60)}h {value % 60}m
@@ -86,11 +86,11 @@ export const columns: ColumnDef<z.infer<typeof subscriptionActiveSchema>>[] = [
   },
   {
     accessorKey: "days_left",
-    header: () => <div className="text-center">Days Left</div>,
+    header: () => <div>Days Left</div>,
     cell: ({ row }) => {
       const value = row.getValue("days_left") as number | null;
       return (
-        <div className={`${cellStyle} text-center`}>
+        <div className={`${cellStyle}`}>
           {value != null ? (
             <Badge variant={value <= 3 ? "destructive" : "default"}>
               {value} {value === 1 ? "day" : "days"}

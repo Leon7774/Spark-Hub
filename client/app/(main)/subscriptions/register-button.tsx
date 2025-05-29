@@ -8,9 +8,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import RegisterCustomerForm from "./register_log";
+import EnhancedRegistrationForm from "./register-subscription"; // Updated import
 
-export const RegisterButton = () => {
+const RegisterButton = () => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -18,23 +18,25 @@ export const RegisterButton = () => {
       <div className="flex gap-4">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger onClick={() => setOpen(true)}>
-            <Button className="mb-2">Create Custom Log</Button>
+            <Button className="mb-2">Register Session/Plan</Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
             <DialogHeader className="pt-5">
-              <DialogTitle>Create Custom Log</DialogTitle>
+              <DialogTitle>Register Session or Purchase Plan</DialogTitle>
               <DialogDescription>
-                Make a custom log here. Enter the action details.
+                Start a customer session or purchase a subscription plan for a
+                customer.
               </DialogDescription>
             </DialogHeader>
-            <RegisterCustomerForm
+            <EnhancedRegistrationForm
               dialogOpen={open}
               dialogOpenSet={setOpen}
-            ></RegisterCustomerForm>
+            />
           </DialogContent>
         </Dialog>
       </div>
     </div>
   );
 };
+
 export default RegisterButton;

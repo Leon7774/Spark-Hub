@@ -61,7 +61,7 @@ export const subscriptionActiveSchema = z.object({
   created_at: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
   customer_id: z.number(),
   plan_id: z.number(),
-  plan_name: z.string(),
+  plan_name: z.string().optional(),
   expiry_date: z
     .preprocess((val) => new Date(val as string), z.date())
     .nullable(), // or z.date() if it's ISO format already parsed

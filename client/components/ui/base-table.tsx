@@ -69,7 +69,7 @@ export function BaseTable<TData>({
             <TableRow>
               <TableCell
                 colSpan={table.getAllColumns().length}
-                className="h-24 text-center"
+                className="h-24"
               >
                 No results.
               </TableCell>

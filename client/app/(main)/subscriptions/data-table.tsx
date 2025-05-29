@@ -25,6 +25,8 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { DataTableProps } from "@/utils/types";
+import { Plus } from "lucide-react";
+import RegisterButton from "@/app/(main)/subscriptions/register-button";
 
 export function ActiveSubscriptions<TData, TValue>({
   columns,
@@ -81,12 +83,10 @@ export function ActiveSubscriptions<TData, TValue>({
             className="max-w-sm"
           />
         </div>
-        <Button variant="default" className="mr-5">
-          Add Subscription
-        </Button>
+        <RegisterButton />
       </div>
       <div className="rounded-md border">
-        <BaseTable<TData> table={table} padding={4} />
+        <BaseTable<TData> table={table} padding={0} />
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="text-muted-foreground text-sm">
