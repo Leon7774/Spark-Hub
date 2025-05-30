@@ -1,5 +1,5 @@
 // test_supabase.ts
-import "dotenv/config"; // 👈 loads .env
+import "dotenv/config"; // 👈 loads .env.local
 import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 

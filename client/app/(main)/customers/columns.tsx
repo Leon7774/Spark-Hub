@@ -38,7 +38,7 @@ export const columns: ColumnDef<Customer>[] = [
     header: "Joined at",
     size: 70,
     cell: ({ row }) => {
-      const value = row.getValue("created_at");
+      const value: string = row.getValue("created_at");
       const date = new Date(value);
       const formatted = date.toLocaleString(); // or .toLocaleString() if you want time too
       return <div>{formatted}</div>;
