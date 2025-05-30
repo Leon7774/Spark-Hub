@@ -27,20 +27,31 @@ import { useEffect, useState } from "react";
 import { useDataContext } from "@/context/dataContext";
 import { Session } from "../../../lib/schemas";
 import { Badge } from "@/components/ui/badge";
-import {enrichSessions} from "@/app/(main)/sessions/enrich";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-
+import { enrichSessions } from "@/app/(main)/sessions/enrich";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar, Users, CheckCircle, MapPin, X } from "lucide-react";
 
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = useState<Session[]>([]);
-  const { sessions: rawSessionData, loading, plans, customers } = useDataContext();
+  const {
+    sessions: rawSessionData,
+    loading,
+    plans,
+    customers,
+  } = useDataContext();
 
   useEffect(() => {
     setData(enrichSessions(rawSessionData, customers, plans));
@@ -66,181 +77,198 @@ export const SessionsTable = () => {
     },
   });
 
+  // Calculate stats
+  const todaySessions = data.filter((s: Session) => {
+    const start = new Date(s.start_time);
+    const now = new Date();
+    return (
+      start.getDate() === now.getDate() &&
+      start.getMonth() === now.getMonth() &&
+      start.getFullYear() === now.getFullYear()
+    );
+  });
+
+  const ongoingSessions = todaySessions.filter((s: Session) => {
+    const end = s.end_time ? new Date(s.end_time) : null;
+    return !end;
+  });
+
+  const endedSessions = todaySessions.filter((s: Session) => {
+    const end = s.end_time ? new Date(s.end_time) : null;
+    return end;
+  });
+
+  const obreroSessions = ongoingSessions.filter((s: Session) =>
+    s.branch?.toLowerCase().includes("obrero"),
+  ).length;
+
+  const matinaSessions = ongoingSessions.filter((s: Session) =>
+    s.branch?.toLowerCase().includes("matina"),
+  ).length;
+
+  const clearFilters = () => {
+    table.resetColumnFilters();
+  };
+
+  const hasActiveFilters = columnFilters.length > 0;
+
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+    <div className="w-full space-y-6">
+      {/* Compact Stats Cards */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
         {/* Total Sessions Today */}
-        <div className="rounded-lg border p-3">
-          <div className="flex items-center gap-2">
-            <Badge variant="default">Total Today</Badge>
-            <span className="text-2xl font-bold">
-              {
-                data.filter((s: Session) => {
-                  const start = new Date(s.start_time);
-                  const now = new Date();
-                  return (
-                    start.getDate() === now.getDate() &&
-                    start.getMonth() === now.getMonth() &&
-                    start.getFullYear() === now.getFullYear()
-                  );
-                }).length
-              }
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar className="h-4 w-4 text-blue-600" />
+            <span className="text-xs font-medium text-blue-700">
+              Total Today
             </span>
+          </div>
+          <div className="text-2xl font-bold text-blue-900">
+            {todaySessions.length}
           </div>
         </div>
 
-        {/* Ongoing Sessions Today */}
-        <div className="rounded-lg border p-3">
-          <div className="flex items-center gap-2">
-            <Badge variant="default" className="bg-green-100 text-green-800">
-              Ongoing
-            </Badge>
-            <span className="text-2xl font-bold">
-              {
-                data.filter((s: Session) => {
-                  const now = new Date();
-                  const start = new Date(s.start_time);
-                  const end = s.end_time ? new Date(s.end_time) : null;
-                  const isToday =
-                    start.getDate() === now.getDate() &&
-                    start.getMonth() === now.getMonth() &&
-                    start.getFullYear() === now.getFullYear();
-                  return isToday && !end;
-                }).length
-              }
-            </span>
+        {/* Ongoing Sessions */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="h-4 w-4 text-green-600" />
+            <span className="text-xs font-medium text-green-700">Active</span>
+          </div>
+          <div className="text-2xl font-bold text-green-900">
+            {ongoingSessions.length}
           </div>
         </div>
 
-        {/* Ended Sessions Today */}
-        <div className="rounded-lg border p-3">
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">Ended</Badge>
-            <span className="text-2xl font-bold">
-              {
-                data.filter((s: Session) => {
-                  const end = s.end_time ? new Date(s.end_time) : null;
-                  const now = new Date();
-                  return (
-                    end &&
-                    end.getDate() === now.getDate() &&
-                    end.getMonth() === now.getMonth() &&
-                    end.getFullYear() === now.getFullYear()
-                  );
-                }).length
-              }
-            </span>
+        {/* Ended Sessions */}
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle className="h-4 w-4 text-gray-600" />
+            <span className="text-xs font-medium text-gray-700">Completed</span>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">
+            {endedSessions.length}
           </div>
         </div>
 
-        {/* Branch Sessions - Combined in one card */}
-        <div className="rounded-lg border p-3">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Branch Sessions</Badge>
-            </div>
-            <div className="flex justify-between">
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground">Obrero</span>
-                <span className="text-xl font-bold">
-                  {
-                    data.filter((s: Session) => {
-                      const now = new Date();
-                      const start = new Date(s.start_time);
-                      const end = s.end_time ? new Date(s.end_time) : null;
-                      const isToday =
-                        start.getDate() === now.getDate() &&
-                        start.getMonth() === now.getMonth() &&
-                        start.getFullYear() === now.getFullYear();
-                      return (
-                        isToday &&
-                        !end &&
-                        s.branch?.includes("obrero")
-                      );
-                    }).length
-                  }
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-muted-foreground">Matina</span>
-                <span className="text-xl font-bold">
-                  {
-                    data.filter((s: Session) => {
-                      const now = new Date();
-                      const start = new Date(s.start_time);
-                      const end = s.end_time ? new Date(s.end_time) : null;
-                      const isToday =
-                        start.getDate() === now.getDate() &&
-                        start.getMonth() === now.getMonth() &&
-                        start.getFullYear() === now.getFullYear();
-                      return (
-                        isToday &&
-                        !end &&
-                        s.branch?.includes("matina")
-                      );
-                    }).length
-                  }
-                </span>
-              </div>
-            </div>
+        {/* Obrero Branch */}
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
+          <div className="flex items-center gap-2 mb-1">
+            <MapPin className="h-4 w-4 text-purple-600" />
+            <span className="text-xs font-medium text-purple-700">Obrero</span>
+          </div>
+          <div className="text-2xl font-bold text-purple-900">
+            {obreroSessions}
           </div>
         </div>
+
+        {/* Matina Branch */}
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-3 border border-emerald-200">
+          <div className="flex items-center gap-2 mb-1">
+            <MapPin className="h-4 w-4 text-emerald-600" />
+            <span className="text-xs font-medium text-emerald-700">Matina</span>
+          </div>
+          <div className="text-2xl font-bold text-emerald-900">
+            {matinaSessions}
+          </div>
+        </div>
+
+        {/*/!* Total Revenue (placeholder) *!/*/}
+        {/*<div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-3 border border-amber-200">*/}
+        {/*  <div className="flex items-center gap-2 mb-1">*/}
+        {/*    <span className="text-xs font-medium text-amber-700">Revenue</span>*/}
+        {/*  </div>*/}
+        {/*  <div className="text-lg font-bold text-amber-900">*/}
+        {/*    ₱{(todaySessions.length * 45).toLocaleString()}*/}
+        {/*  </div>*/}
+        {/*</div>*/}
       </div>
 
-      <div className="flex items-center justify-between py-4">
-        <RegisterButton />
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Filter by customer..."
-            value={
-              (table.getColumn("customer")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("customer")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-          {/* TODO IMPLEMENT PLAN TYPE FILTER */}
-          {/* <Input
-            placeholder="Filter by type..."
-            value={
-              (table.getColumn("session_type")?.getFilterValue() as string) ??
-              ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("session_type")
-                ?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          /> */}
-          <Select
-              value={(table.getColumn("branch")?.getFilterValue() as string) || undefined}
-              onValueChange={(value) => table.getColumn("branch")?.setFilterValue(value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by location..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="obrero">Obrero</SelectItem>
-              <SelectItem value="matina">Matina</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Enhanced Filters Section */}
+      <div className="bg-white rounded-lg border p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <RegisterButton />
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <Input
+              placeholder="Search customers..."
+              value={
+                (table.getColumn("customer")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("customer")?.setFilterValue(event.target.value)
+              }
+              className="w-full sm:w-64"
+            />
+
+            <Select
+              value={
+                (table.getColumn("branch")?.getFilterValue() as string) ||
+                undefined
+              }
+              onValueChange={(value) =>
+                table.getColumn("branch")?.setFilterValue(value)
+              }
+            >
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue placeholder="All Branches" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="obrero">Obrero</SelectItem>
+                <SelectItem value="matina">Matina</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
+            {columnFilters.map((filter) => (
+              <Badge key={filter.id} variant="secondary" className="text-xs">
+                {filter.id}: {filter.value}
+                <button
+                  onClick={() => table.getColumn(filter.id)?.setFilterValue("")}
+                  className="ml-1 hover:text-red-600"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
-      <div className="rounded-md border">
+
+      {/* Enhanced Table */}
+      <div className="bg-white rounded-lg border shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-b bg-gray-50/50">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className="font-semibold text-gray-700"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -253,9 +281,12 @@ export const SessionsTable = () => {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-32 text-center"
                 >
-                  Loading...
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="text-gray-500">Loading sessions...</span>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
@@ -263,12 +294,13 @@ export const SessionsTable = () => {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-gray-50/50 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -278,36 +310,63 @@ export const SessionsTable = () => {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-32 text-center"
                 >
-                  No sessions found.
+                  <div className="flex flex-col items-center justify-center space-y-2 text-gray-500">
+                    <Users className="h-8 w-8 text-gray-400" />
+                    <span>No sessions found</span>
+                    {hasActiveFilters && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearFilters}
+                        className="mt-2"
+                      >
+                        Clear filters to see all sessions
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+
+      {/* Enhanced Pagination */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg border p-4">
+        <div className="text-sm text-gray-600 order-2 sm:order-1">
+          Showing {table.getRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} sessions
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <span className="ml-2 text-blue-600">
+              ({table.getFilteredSelectedRowModel().rows.length} selected)
+            </span>
+          )}
         </div>
-        <div className="space-x-2">
+
+        <div className="flex items-center space-x-2 order-1 sm:order-2">
           <Button
-            variant="default"
+            variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="transition-colors"
+            className="transition-all hover:bg-gray-50"
           >
             Previous
           </Button>
+          <div className="flex items-center gap-1 px-2">
+            <span className="text-sm text-gray-600">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
+            </span>
+          </div>
           <Button
-            variant="default"
+            variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="transition-colors"
+            className="transition-all hover:bg-gray-50"
           >
             Next
           </Button>
