@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.from("customers").select("*");
 
   if (error || !data) {
-    // console.log(error);
+    // console.activity_log(error);
     return NextResponse.json({ error: "Customers not found" }, { status: 404 });
   }
 

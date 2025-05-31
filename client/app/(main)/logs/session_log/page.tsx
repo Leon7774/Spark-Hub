@@ -1,5 +1,8 @@
 import React from "react";
 
+// TODO:
+// - Add expired sessions
+// - Add ability to delete sessions
 const LogPage = () => {
   return (
     <div>

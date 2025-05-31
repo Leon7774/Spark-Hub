@@ -5,11 +5,11 @@ import fs from "fs";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 const { data, error } = await supabase.from("customers_public").select("*");
-// console.log(data, error);
+// console.activity_log(data, error);
 
 const downloadCSV = (data: any[]) => {
   const headers = Object.keys(data[0]).join(",");

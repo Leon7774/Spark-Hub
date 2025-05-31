@@ -21,7 +21,7 @@ export const RegisterButton = () => {
           <DialogTrigger asChild>
             <Button className="mb-2">
               <Plus></Plus>
-              Create Subscription Plan
+              Create Session Plan
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">

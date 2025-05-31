@@ -32,11 +32,11 @@ export async function logAction(entry: LogEntry) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      console.error("No user found when trying to log action");
+      console.error("No user found when trying to activity_log action");
       return;
     }
 
-    // Insert log entry
+    // Insert activity_log entry
     const { error } = await supabase.from("action_logs").insert({
       user_id: user.id,
       action_type: entry.action_type,
@@ -57,7 +57,7 @@ export async function logServerAction(entry: LogEntry, userId: string) {
   try {
     const supabase = await createServerClient();
 
-    // Insert log entry
+    // Insert activity_log entry
     const { error } = await supabase.from("action_logs").insert({
       user_id: userId,
       action_type: entry.action_type,

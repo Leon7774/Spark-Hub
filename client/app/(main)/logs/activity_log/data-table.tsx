@@ -30,7 +30,7 @@ interface ActionLog {
   } | null;
 }
 
-// Sample data for the activity log
+// Sample data for the activity activity_log
 const sampleActionLogs: ActionLog[] = [
   {
     id: "1",
@@ -125,7 +125,7 @@ const columns: ColumnDef<ActionLog>[] = [
 export function ActionLogsTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [rowSelection, setRowSelection] = React.useState({});
 

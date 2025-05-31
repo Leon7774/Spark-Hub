@@ -7,6 +7,12 @@ import useSWR from "swr";
 import RegisterButton from "./register-button";
 import { TableLoading } from "./loading";
 
+// TODO:
+// - Add ability to delete plans
+// - - Deactivate plan
+// - - Delete plan
+// - Add ability to update plans
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const Page = () => {
@@ -14,7 +20,7 @@ const Page = () => {
 
   return (
     <div>
-      <h1 className="text-4xl font-black mb-8">Subscription Plans</h1>
+      <h1 className="text-4xl font-black mb-8">Session Plans</h1>
       <div className="flex items-center justify-between pb-10">
         <div>
           <p className="text-muted-foreground">

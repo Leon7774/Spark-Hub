@@ -51,7 +51,7 @@ export async function initDB() {
 
 // Function to add a pending change
 export async function addPendingChange(
-  change: Omit<PendingChange, "id" | "timestamp">
+  change: Omit<PendingChange, "id" | "timestamp">,
 ) {
   const db = await initDB();
   const tx = db.transaction("pending_changes", "readwrite");
@@ -145,7 +145,7 @@ export async function syncDataFromSupabase() {
         store: "customers",
         lastSync: new Date().toISOString(),
       },
-      "customers"
+      "customers",
     );
   }
 
@@ -168,7 +168,7 @@ export async function syncDataFromSupabase() {
         store: "subscription_plans",
         lastSync: new Date().toISOString(),
       },
-      "subscription_plans"
+      "subscription_plans",
     );
   }
 
@@ -191,7 +191,7 @@ export async function syncDataFromSupabase() {
         store: "active_subscriptions",
         lastSync: new Date().toISOString(),
       },
-      "active_subscriptions"
+      "active_subscriptions",
     );
   }
 
@@ -214,7 +214,7 @@ export async function syncDataFromSupabase() {
         store: "sessions",
         lastSync: new Date().toISOString(),
       },
-      "sessions"
+      "sessions",
     );
   }
 
@@ -261,7 +261,7 @@ export async function shouldSyncData(): Promise<boolean> {
   return lastSync < fiveMinutesAgo;
 }
 
-// Function to add a log entry
+// Function to add a activity_log entry
 export async function addLogEntry(entry: {
   id: string;
   message: string;
@@ -274,7 +274,7 @@ export async function addLogEntry(entry: {
   await tx.done;
 }
 
-// Function to get all log entries
+// Function to get all activity_log entries
 export async function getLogEntries() {
   const db = await initDB();
   const tx = db.transaction("log", "readonly");

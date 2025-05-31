@@ -148,7 +148,7 @@ export default function EnhancedRegistrationForm({
   async function handleConfirm(values: z.infer<typeof registrationFormSchema>) {
     setLoading(true);
     try {
-      // TODO: Implement transaction log
+      // TODO: Implement transaction activity_log
 
       dialogOpenSet(false);
       setShowDialog(false);

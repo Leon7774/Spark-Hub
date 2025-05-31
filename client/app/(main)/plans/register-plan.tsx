@@ -278,7 +278,7 @@ export default function RegisterPlanForm({
 
   // async function handleConfirm(values: PlanFormValues) {
   //   setLoading(true);
-  //   console.log("Trying to register", values);
+  //   console.activity_log("Trying to register", values);
   //   try {
   //     await fetch("../api/plan", {
   //       method: "POST",

@@ -1,4 +1,6 @@
 import {
+  ArrowRight,
+  ArrowRightIcon,
   Logs,
   LucideTimer,
   NotebookText,
@@ -36,26 +38,38 @@ export const RouteSelect = () => {
 
       <Collapsible className="group/collapsible">
         <CollapsibleTrigger asChild>
-          <Link href="/session_log">
+          <Link href="/logs/activity_log">
             <Button
               variant="ghost"
               className="w-[100%] hover:bg-accent2 flex h-9 justify-baseline cursor-pointer overflow-visible"
             >
               <Logs strokeWidth={2} className="mr-2 size-6" />
-              Log
+              History Logs
             </Button>
           </Link>
         </CollapsibleTrigger>
         <div className="flex">
-          <CollapsibleContent className="bg-accent2 w-0.5 h-20"></CollapsibleContent>
+          <CollapsibleContent className="bg-primary/50 w-0.5 h-30 ml-5.5"></CollapsibleContent>
           <div className="flex flex-col gap-2 mt-1 ml-2">
             <CollapsibleContent>
-              <RouteButton route="/log" routeText="Activity Log"></RouteButton>
+              <RouteButton
+                route="/logs/activity_log"
+                routeText="Activity History"
+                className="w-35 h-8 text-xs"
+              ></RouteButton>
             </CollapsibleContent>
             <CollapsibleContent>
               <RouteButton
-                route="/session_log"
-                routeText="Session Log"
+                route="/logs/session_log"
+                routeText="Session History"
+                className="w-35 h-8 text-xs"
+              ></RouteButton>
+            </CollapsibleContent>
+            <CollapsibleContent>
+              <RouteButton
+                route="/logs/expired_subscriptions"
+                routeText="Expired Subscriptions"
+                className="w-35 h-8 text-xs"
               ></RouteButton>
             </CollapsibleContent>
           </div>

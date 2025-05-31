@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
     // validateData(data, sessionSchema);
     validateSession(data);
-    // console.log("Trying to log");
+    // console.activity_log("Trying to activity_log");
     return NextResponse.json(data);
   }
 }
