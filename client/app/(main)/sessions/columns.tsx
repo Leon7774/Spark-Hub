@@ -12,6 +12,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { Session } from "@/lib/schemas";
 import { differenceInDays, differenceInMinutes, format } from "date-fns";
+import { sessionLogout } from "@/app/(main)/sessions/functions";
 
 export const columns: ColumnDef<Session>[] = [
   {
@@ -150,7 +151,13 @@ export const columns: ColumnDef<Session>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem onClick={}>Logout</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                sessionLogout(row.original.id);
+              }}
+            >
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

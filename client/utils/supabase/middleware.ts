@@ -31,9 +31,16 @@ export async function updateSession(request: NextRequest) {
   );
 
   const pathname = request.nextUrl.pathname;
-  const isPublicPath = PUBLIC_PATHS.some((prefix) =>
-    pathname.startsWith(prefix),
-  );
+
+  // const isPublicPath = PUBLIC_PATHS.some((prefix) =>
+  //   pathname.startsWith(prefix),
+  // );
+  // if (isPublicPath) return response;
+
+  const isPublicPath =
+    PUBLIC_PATHS.some((prefix) => pathname.startsWith(prefix)) ||
+    pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff2?)$/);
+
   if (isPublicPath) return response;
 
   const {

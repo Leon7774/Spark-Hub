@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar, Users, CheckCircle, MapPin, X } from "lucide-react";
+import useSWR from "swr";
 
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -46,17 +47,24 @@ export const SessionsTable = () => {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [data, setData] = useState<Session[]>([]);
-  const {
-    sessions: rawSessionData,
-    loading,
-    plans,
-    customers,
-  } = useDataContext();
+
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+  const { data: rawSessionData, isLoading } = useSWR("/api/session", fetcher);
+  const { data: customersData } = useSWR("/api/customer", fetcher);
+  const { data: plansData } = useSWR("/api/plan", fetcher);
 
   useEffect(() => {
-    setData(enrichSessions(rawSessionData, customers, plans));
-    console.log(rawSessionData);
-  }, [loading]);
+    if (rawSessionData && customersData && plansData) {
+      setData(
+        enrichSessions(rawSessionData, customersData, plansData).filter(
+          (s) => !s.end_time,
+        ),
+      );
+      // console.log(rawSessionData);
+      // console.log("All data ready!");
+    }
+  }, [rawSessionData, customersData, plansData]);
 
   const table = useReactTable({
     data,
@@ -277,7 +285,7 @@ export const SessionsTable = () => {
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

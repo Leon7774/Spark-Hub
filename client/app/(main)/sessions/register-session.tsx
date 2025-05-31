@@ -226,15 +226,7 @@ export default function RegisterSessionForm({
 
         if (subscriptionError) throw subscriptionError;
 
-        // Create transaction record
-        const transactionData = {
-          customer_id: values.customer_id,
-          plan_id: values.purchase_plan_id,
-          total: selectedPlan.price,
-          date: new Date().toISOString(),
-          branch: "obrero", // You might want to make this dynamic
-          staff: 1, // You might want to get the current staff ID
-        };
+        // TODO: Add log
 
         const { error: transactionError } = await supabase
           .from("transactions")
