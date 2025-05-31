@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { validateData } from "@/app/api/validator";
+import { validateData, validateSingleData } from "@/app/api/validator";
 import { subscriptionActiveSchema } from "@/lib/schemas";
 
 export async function GET(request: NextRequest) {
@@ -34,12 +34,21 @@ export async function POST(request: NextRequest) {
   try {
     console.log(request);
     const body = await request.json();
-    const validatedData = validateData(body, subscriptionActiveSchema);
+    const validatedData = validateSingleData(body, subscriptionActiveSchema);
+
+    if (validatedData === null) {
+      return NextResponse.json(
+        { error: "Invalid subscription data" },
+        { status: 400 },
+      );
+    }
 
     const { data, error } = await supabase
       .from("active_subscriptions")
       .insert(validatedData)
       .select();
+
+    console.log(data);
 
     if (error) {
       console.error(error);
@@ -49,7 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(data[0], { status: 201 });
+    return NextResponse.json(data, { status: 201 });
   } catch (err: any) {
     console.error(err);
     return NextResponse.json(

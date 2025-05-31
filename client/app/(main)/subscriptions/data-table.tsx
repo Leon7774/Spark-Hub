@@ -25,8 +25,9 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { DataTableProps } from "@/utils/types";
-import {ChevronLeft, ChevronRight, Plus} from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import RegisterButton from "@/app/(main)/subscriptions/register-button";
+import { TableLoading } from "@/app/(main)/plans/loading";
 
 export function ActiveSubscriptions<TData, TValue>({
   columns,
@@ -86,40 +87,44 @@ export function ActiveSubscriptions<TData, TValue>({
         <RegisterButton />
       </div>
       <div className="rounded-md border">
-        <BaseTable<TData> table={table} padding={0} />
+        {data.length > 0 ? (
+          <BaseTable<TData> table={table} padding={0} />
+        ) : (
+          <TableLoading></TableLoading>
+        )}
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-
         <div className="flex items-center space-x-2">
           <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="gap-1"
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="gap-1"
           >
             <ChevronLeft className="h-4 w-4" />
             Previous
           </Button>
 
           <div className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground">
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-              </span>
+            <span className="text-sm text-muted-foreground">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
+            </span>
           </div>
 
           <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="gap-1"
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="gap-1"
           >
             Next
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
-      </div>
+    </div>
   );
 }

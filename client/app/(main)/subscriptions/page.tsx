@@ -1,12 +1,12 @@
 "use client";
 
 import { columns } from "./columns";
-import CustomerSheet from "./customer-sheet";
 import { ActiveSubscriptions } from "./data-table";
 import useSWR from "swr";
 import { SubscriptionActive, subscriptionActiveSchema } from "@/lib/schemas";
 import { format } from "date-fns";
 import { enrichSubscriptions } from "./enrich";
+import { TableLoading } from "@/app/(main)/plans/loading";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -16,6 +16,7 @@ const Subscriptions = () => {
     "/api/customer",
     fetcher,
   );
+
   const { data: plans, isLoading: plansLoading } = useSWR("/api/plan", fetcher);
 
   let enrichedData: SubscriptionActive[] = [];
@@ -24,15 +25,14 @@ const Subscriptions = () => {
     enrichedData = enrichSubscriptions(data, customers, plans);
   }
 
-  console.log(error);
-  console.log(isLoading);
-  console.log(data);
-
   return (
     <div>
       <h1 className="text-4xl font-black mb-8">Customer Subscriptions</h1>
-      {data && <ActiveSubscriptions data={enrichedData} columns={columns} />}
-      <CustomerSheet></CustomerSheet>
+      {data ? (
+        <ActiveSubscriptions data={enrichedData} columns={columns} />
+      ) : (
+        <TableLoading></TableLoading>
+      )}
     </div>
   );
 };

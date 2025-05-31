@@ -23,8 +23,7 @@ export const columns: ColumnDef<z.infer<typeof subscriptionActiveSchema>>[] = [
     header: () => <div className="text-left">Customer ID</div>,
     cell: ({ row }) => (
       <div className={`${cellStyle} text-left font-mono`}>
-        {row.original.customer?.first_name}
-        {row.original.customer?.last_name}
+        {row.original.customer?.first_name} {row.original.customer?.last_name}
       </div>
     ),
     size: 120,

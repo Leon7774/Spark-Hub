@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input, InputIcon } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Dispatch, SetStateAction, useState, useEffect } from "react";
 
 import {
@@ -33,33 +33,44 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { SubscriptionTypes } from "@/utils/types";
-import { PlanType, Plan } from "@/app/api/plans";
-import { Select } from "@/components/ui/select";
+import { Plan } from "@/app/api/plans";
 import {
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Select,
 } from "@/components/ui/select";
-import clsx from "clsx";
-import { PhilippinePeso, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Customer } from "@/app/api/customers";
 import { createClient } from "@/utils/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { mutate } from "swr";
 
-export const subscriptionActiveSchema = z.object({
-  created_at: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
-  customer_id: z.number(),
-  plan_id: z.number(),
-  expiry_date: z.date(),
-  time_left: z.number().nullable(),
-  days_left: z.number().nullable(),
+// Schema specifically for BUNDLE subscriptions
+export const bundleSubscriptionSchema = z.object({
+  customer_id: z.number({
+    required_error: "Customer is required.",
+  }),
+  plan_id: z.number({
+    required_error: "Bundle plan is required.",
+  }),
+  expiry_date: z.date().nullable().optional(),
+  created_at: z.date().nullable().optional(),
+  time_left: z
+    .number({
+      required_error: "Time left is required.",
+    })
+    .optional(),
+  days_left: z
+    .number({
+      required_error: "Days left is required.",
+    })
+    .optional(),
 });
 
-const registrationFormSchema = subscriptionActiveSchema;
+type BundleSubscriptionFormValues = z.infer<typeof bundleSubscriptionSchema>;
 
-export default function EnhancedRegistrationForm({
+export default function BundleSubscriptionForm({
   dialogOpen,
   dialogOpenSet,
 }: {
@@ -68,23 +79,21 @@ export default function EnhancedRegistrationForm({
 }) {
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [registrationType, setRegistrationType] = useState<string>("session");
-  const [sessionType, setSessionType] = useState<string | undefined>(undefined);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [availablePlans, setAvailablePlans] = useState<Plan[]>([]);
-  const [allPlans, setAllPlans] = useState<Plan[]>([]);
+  const [bundlePlans, setBundlePlans] = useState<Plan[]>([]);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
 
-  // Load customers and plans
+  // Load customers and BUNDLE plans only
   useEffect(() => {
     async function loadData() {
       try {
-        const supabase = await createClient();
+        const supabase = createClient();
 
+        // TODO: Make this into an api call
         // Fetch customers
         const { data: customersData, error: customersError } = await supabase
           .from("customers")
@@ -93,26 +102,17 @@ export default function EnhancedRegistrationForm({
         if (customersError) throw customersError;
         setCustomers(customersData || []);
 
-        // Fetch all plans for plan purchase
-        const { data: allPlansData, error: allPlansError } = await supabase
-          .from("subscription_plans")
-          .select("*")
-          .eq("is_active", true);
-
-        if (allPlansError) throw allPlansError;
-        setAllPlans(allPlansData || []);
-
-        // Fetch plans for session if session type is set
-        if (sessionType && sessionType !== "custom") {
-          const { data: plansData, error: plansError } = await supabase
+        // TODO: Make this into an api call
+        // Fetch ONLY BUNDLE plans
+        const { data: bundlePlansData, error: bundlePlansError } =
+          await supabase
             .from("subscription_plans")
             .select("*")
-            .eq("plan_type", sessionType)
+            .eq("plan_type", "bundle") // Only BUNDLE plans
             .eq("is_active", true);
 
-          if (plansError) throw plansError;
-          setAvailablePlans(plansData || []);
-        }
+        if (bundlePlansError) throw bundlePlansError;
+        setBundlePlans(bundlePlansData || []);
       } catch (error) {
         console.error("Error loading data:", error);
         toast.error("Failed to load data");
@@ -120,17 +120,13 @@ export default function EnhancedRegistrationForm({
     }
 
     loadData();
-  }, [sessionType]);
+  }, []);
 
-  const form = useForm<z.infer<typeof registrationFormSchema>>({
-    resolver: zodResolver(registrationFormSchema),
+  const form = useForm<BundleSubscriptionFormValues>({
+    resolver: zodResolver(bundleSubscriptionSchema),
     defaultValues: {
-      created_at: undefined,
       customer_id: undefined,
       plan_id: undefined,
-      expiry_date: undefined,
-      time_left: null,
-      days_left: null,
     },
   });
 
@@ -145,20 +141,79 @@ export default function EnhancedRegistrationForm({
     setShowDialog(true);
   }
 
-  async function handleConfirm(values: z.infer<typeof registrationFormSchema>) {
+  async function handleConfirm(values: BundleSubscriptionFormValues) {
     setLoading(true);
     try {
-      // TODO: Implement transaction activity_log
+      const supabase = createClient();
+
+      const selectedPlan = bundlePlans.find(
+        (plan) => plan.id === values.plan_id,
+      );
+
+      if (!selectedPlan) {
+        toast.error("Selected bundle plan not found.");
+        setLoading(false);
+        setShowDialog(false);
+        return;
+      }
+
+      // Check if customer already has an active subscription for this plan
+      const { data: existingSubscription, error: checkError } = await supabase
+        .from("active_subscriptions")
+        .select("*")
+        .eq("customer_id", values.customer_id)
+        .eq("plan_id", values.plan_id)
+        .single();
+
+      if (checkError && checkError.code !== "PGRST116") {
+        throw checkError;
+      }
+
+      if (existingSubscription) {
+        toast.error(
+          "Customer already has an active subscription for this bundle plan.",
+        );
+        setLoading(false);
+        setShowDialog(false);
+        return;
+      }
+
+      // Calculate expiry date if plan has expiry duration
+      values.expiry_date = selectedPlan.expiry_duration
+        ? new Date(Date.now() + selectedPlan.expiry_duration)
+        : null;
+
+      values.created_at = new Date(Date.now());
+
+      // Create new bundle subscription
+
+      const response = await fetch("/api/subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!response.ok) {
+        const responseData = await response.json();
+        throw new Error(
+          `HTTP error! status: ${response.status} ${JSON.stringify(responseData)}`,
+        );
+      }
+
+      toast.success(
+        `Successfully subscribed ${selectedCustomer?.first_name} ${selectedCustomer?.last_name} to ${selectedPlan.name} bundle!`,
+      );
 
       dialogOpenSet(false);
       setShowDialog(false);
       form.reset();
       setSelectedCustomer(null);
-      setSessionType(undefined);
-      setRegistrationType("session");
+      setSearchQuery("");
     } catch (error) {
-      console.error("Error processing registration:", error);
-      toast.error("Failed to process registration");
+      console.error("Error creating bundle subscription:", error);
+      toast.error("Failed to create bundle subscription");
     } finally {
       setLoading(false);
     }
@@ -166,49 +221,17 @@ export default function EnhancedRegistrationForm({
 
   const getConfirmationMessage = () => {
     const values = form.getValues();
-    if (values.registration_type === "session") {
-      return "Are you sure you want to register this session? This action cannot be undone.";
-    } else {
-      const selectedPlan = allPlans.find(
-        (plan) => plan.id === values.purchase_plan_id,
-      );
-      return `Are you sure you want to purchase the ${selectedPlan?.name} plan for ₱${selectedPlan?.price}? This will charge the customer and activate their subscription.`;
-    }
+    const selectedPlan = bundlePlans.find((plan) => plan.id === values.plan_id);
+    const customerName = selectedCustomer
+      ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
+      : "the selected customer";
+
+    return `Are you sure you want to subscribe ${customerName} to the ${selectedPlan?.name} bundle for ₱${selectedPlan?.price}? This will create a new active subscription.`;
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Registration Type Selection */}
-        <FormField
-          control={form.control}
-          name="registration_type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Registration Type</FormLabel>
-              <Tabs
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  setRegistrationType(value);
-                  // Reset form when switching types
-                  form.setValue("session_type", null);
-                  form.setValue("plan_id", null);
-                  form.setValue("purchase_plan_id", null);
-                  setSessionType(undefined);
-                }}
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="session">Start Session</TabsTrigger>
-                  <TabsTrigger value="plan_purchase">Purchase Plan</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Customer Selection */}
         <FormField
           control={form.control}
@@ -256,227 +279,93 @@ export default function EnhancedRegistrationForm({
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <div className="max-h-[300px] overflow-y-auto border rounded-md">
-                {filteredCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    className={`p-2 cursor-pointer hover:bg-gray-100 ${
-                      selectedCustomer?.id === customer.id ? "bg-gray-100" : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedCustomer(customer);
-                      form.setValue("customer_id", customer.id);
-                      setShowCustomerDialog(false);
-                    }}
-                  >
-                    {customer.first_name} {customer.last_name}
+                {filteredCustomers.length > 0 ? (
+                  filteredCustomers.map((customer) => (
+                    <div
+                      key={customer.id}
+                      className={`p-3 cursor-pointer hover:bg-gray-100 border-b last:border-b-0 ${
+                        selectedCustomer?.id === customer.id ? "bg-blue-50" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedCustomer(customer);
+                        form.setValue("customer_id", customer.id);
+                        setShowCustomerDialog(false);
+                        setSearchQuery("");
+                      }}
+                    >
+                      <div className="font-medium">
+                        {customer.first_name} {customer.last_name}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 text-center text-gray-500">
+                    No customers found
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* Session Registration Fields */}
-        {registrationType === "session" && (
-          <>
-            {/* Session Type Selection */}
-            <FormField
-              control={form.control}
-              name="session_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Session Type</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      setSessionType(value);
-                    }}
-                    value={field.value || ""}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a session type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="subscription">Subscription</SelectItem>
-                      <SelectItem value="straight">Straight</SelectItem>
-                      <SelectItem value="hourly">Hourly</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Plan Selection for Sessions */}
-            {sessionType && sessionType !== "custom" && (
-              <FormField
-                control={form.control}
-                name="plan_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Plan</FormLabel>
-                    <Select
-                      onValueChange={(value) => field.onChange(Number(value))}
-                      value={field.value?.toString() || ""}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a plan" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availablePlans.map((plan) => (
-                          <SelectItem key={plan.id} value={plan.id.toString()}>
-                            {plan.name} - ₱{plan.price}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {/* Custom Session Fields */}
-            {sessionType === "custom" && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="custom_start_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Time</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            {...field}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="custom_end_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Time</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            {...field}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="custom_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price</FormLabel>
-                      <FormControl>
-                        <InputIcon
-                          icon={
-                            <PhilippinePeso
-                              size={15}
-                              strokeWidth={2}
-                              className="text-muted-foreground p-0"
-                            />
-                          }
-                          type="number"
-                          {...field}
-                          value={field.value || 0}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Plan Purchase Fields */}
-        {registrationType === "plan_purchase" && (
-          <FormField
-            control={form.control}
-            name="purchase_plan_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Select Plan to Purchase</FormLabel>
-                <Select
-                  onValueChange={(value) => field.onChange(Number(value))}
-                  value={field.value?.toString() || ""}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a plan to purchase" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allPlans.map((plan) => (
+        {/* Bundle Plan Selection */}
+        <FormField
+          control={form.control}
+          name="plan_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Bundle Plan</FormLabel>
+              <Select
+                onValueChange={(value) => field.onChange(Number(value))}
+                value={field.value?.toString() || ""}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a bundle plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bundlePlans.length > 0 ? (
+                    bundlePlans.map((plan) => (
                       <SelectItem key={plan.id} value={plan.id.toString()}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {plan.name} - ₱{plan.price}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {plan.plan_type} •
-                            {plan.time_included &&
-                              ` ${plan.time_included} mins`}
-                            {plan.days_included &&
-                              ` ${plan.days_included} days`}
-                            {plan.expiry_duration &&
-                              ` • Expires in ${plan.expiry_duration} days`}
-                          </span>
-                        </div>
+                        {plan.name} - ₱{plan.price}
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+                    ))
+                  ) : (
+                    <SelectItem value="no-plans" disabled>
+                      No bundle plans available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <Button type="submit" disabled={isLoading}>
-          {isLoading
-            ? registrationType === "session"
-              ? "Registering..."
-              : "Processing..."
-            : registrationType === "session"
-              ? "Register Session"
-              : "Purchase Plan"}
+        <Button
+          type="submit"
+          disabled={isLoading || !selectedCustomer || !form.watch("plan_id")}
+          className="w-full"
+        >
+          {isLoading ? "Processing..." : "Create Bundle Subscription"}
         </Button>
       </form>
 
+      {/* Confirmation Dialog */}
       <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {registrationType === "session"
-                ? "Confirm Session Registration"
-                : "Confirm Plan Purchase"}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Confirm Bundle Subscription</AlertDialogTitle>
             <AlertDialogDescription>
               {getConfirmationMessage()}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleConfirm(form.getValues())}
               disabled={isLoading}
             >
-              {isLoading ? "Processing..." : "Confirm"}
+              {isLoading ? "Processing..." : "Confirm Subscription"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

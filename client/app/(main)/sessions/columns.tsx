@@ -150,7 +150,7 @@ export const columns: ColumnDef<Session>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

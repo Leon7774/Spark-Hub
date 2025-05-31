@@ -1,86 +1,58 @@
+// utils/supabase/middleware.ts
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+
+const PUBLIC_PATHS = [
+  "/auth",
+  "/_next",
+  "/favicon.ico",
+  "/api",
+  "/login",
+  "/register",
+];
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let response = NextResponse.next();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          response = NextResponse.next();
           cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
-  // 1. Only check auth on paths that need it (avoids unnecessary requests)
-  const shouldCheckAuth = ![
-    "/auth",
-    "/_next",
-    "/favicon.ico",
-    "/api",
-    "/login",
-    "/register",
-  ].some((prefix) => request.nextUrl.pathname.startsWith(prefix));
+  const pathname = request.nextUrl.pathname;
+  const isPublicPath = PUBLIC_PATHS.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
+  if (isPublicPath) return response;
 
-  if (!shouldCheckAuth) return supabaseResponse; // Prevents checking auth for static or unimportant paths
-
-  // 2. Important: Only get the user if needed
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/register")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  const redirectTo = (path: string) => {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = path;
     return NextResponse.redirect(url);
+  };
+
+  if (!user && !pathname.startsWith("/login")) {
+    return redirectTo("/login");
   }
 
-  // 3. Prevent infinite redirects by checking if we're already on the target page
-  if (request.nextUrl.pathname === "/" && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/sessions";
-    if (url.pathname === request.nextUrl.pathname) {
-      return supabaseResponse; // Avoid unnecessary redirect if we're already on the target page
-    }
-    return NextResponse.redirect(url);
+  if (user && (pathname === "/" || pathname === "/login")) {
+    return redirectTo("/sessions");
   }
 
-  // if
-  // User is logged in
-  // User tries to access login page
-  // then
-  // Redirect user to sessions page
-  if (request.nextUrl.pathname === "/login" && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/sessions";
-    if (url.pathname === request.nextUrl.pathname) {
-      return supabaseResponse; // Avoid unnecessary redirect if we're already on the target page
-    }
-    return NextResponse.redirect(url);
-  }
-
-  return supabaseResponse;
+  return response;
 }

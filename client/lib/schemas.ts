@@ -28,7 +28,7 @@ export const customerSchema = z.object({
   id: z.number().optional(),
   first_name: z.string(),
   last_name: z.string(),
-  created_at: z.date(),
+  created_at: z.preprocess((val) => new Date(val as string), z.date()),
   total_spent: z.number(),
   total_hours: z.number(),
 });
@@ -40,14 +40,40 @@ export const subscriptionPlanSchema = z.object({
   price: z.number(),
   plan_type: z.enum(["straight", "bundle", "hourly"]),
   time_included: z.number().nullable(),
-  time_valid_start: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format, expected HH:mm")
-    .nullable(),
-  time_valid_end: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format, expected HH:mm")
-    .nullable(),
+  time_valid_start: z.preprocess(
+    (val) => {
+      // If the value is null or undefined, pass null directly.
+      if (val === null || typeof val === "undefined" || val === "") {
+        return null;
+      }
+      // Otherwise, ensure it's a string and slice it.
+      return String(val).slice(0, 5);
+    },
+    z
+      .string()
+      .regex(
+        /^([01]\d|2[0-3]):([0-5]\d)$/,
+        "Invalid time format, expected HH:mm",
+      )
+      .nullable(),
+  ),
+  time_valid_end: z.preprocess(
+    (val) => {
+      // If the value is null or undefined, pass null directly.
+      if (val === null || typeof val === "undefined" || val === "") {
+        return null;
+      }
+      // Otherwise, ensure it's a string and slice it.
+      return String(val).slice(0, 5);
+    },
+    z
+      .string()
+      .regex(
+        /^([01]\d|2[0-3]):([0-5]\d)$/,
+        "Invalid time format, expected HH:mm",
+      )
+      .nullable(),
+  ),
   created_at: z
     .preprocess((val) => new Date(val as string), z.date())
     .nullable(),
@@ -65,10 +91,11 @@ export const subscriptionActiveSchema = z.object({
   expiry_date: z
     .preprocess((val) => new Date(val as string), z.date())
     .nullable(), // or z.date() if it's ISO format already parsed
-  time_left: z.number().nullable(),
-  days_left: z.number().nullable(),
+  time_left: z.number().nullable().optional(),
+  days_left: z.number().nullable().optional(),
   customer: z
     .object({
+      id: z.number(),
       first_name: z.string(),
       last_name: z.string(),
     })
