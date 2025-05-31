@@ -48,37 +48,16 @@ import { Customer } from "@/app/api/customers";
 import { createClient } from "@/utils/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Enhanced schema for both session and plan registration
-export const RegistrationSchema = z.object({
-  customer_id: z.number({
-    required_error: "Please select a customer",
-  }),
-  registration_type: z.enum(["session", "plan_purchase"], {
-    required_error: "Please select registration type",
-  }),
-  // Session fields
-  session_type: z
-    .enum(["subscription", "straight", "hourly", "custom"])
-    .nullable(),
-  plan_id: z.number().nullable(),
-  custom_start_time: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, {
-      message: "Time must be in HH:MM format",
-    })
-    .nullable(),
-  custom_end_time: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, {
-      message: "Time must be in HH:MM format",
-    })
-    .nullable(),
-  custom_price: z.number().nullable(),
-  // Plan purchase fields
-  purchase_plan_id: z.number().nullable(),
+export const subscriptionActiveSchema = z.object({
+  created_at: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
+  customer_id: z.number(),
+  plan_id: z.number(),
+  expiry_date: z.date(),
+  time_left: z.number().nullable(),
+  days_left: z.number().nullable(),
 });
 
-const registrationFormSchema = RegistrationSchema;
+const registrationFormSchema = subscriptionActiveSchema;
 
 export default function EnhancedRegistrationForm({
   dialogOpen,
@@ -146,14 +125,12 @@ export default function EnhancedRegistrationForm({
   const form = useForm<z.infer<typeof registrationFormSchema>>({
     resolver: zodResolver(registrationFormSchema),
     defaultValues: {
+      created_at: undefined,
       customer_id: undefined,
-      registration_type: "session",
-      session_type: undefined,
-      plan_id: null,
-      custom_start_time: "",
-      custom_end_time: "",
-      custom_price: 0,
-      purchase_plan_id: null,
+      plan_id: undefined,
+      expiry_date: undefined,
+      time_left: null,
+      days_left: null,
     },
   });
 
@@ -171,90 +148,7 @@ export default function EnhancedRegistrationForm({
   async function handleConfirm(values: z.infer<typeof registrationFormSchema>) {
     setLoading(true);
     try {
-      const supabase = await createClient();
-
-      if (values.registration_type === "session") {
-        // Handle session registration
-        const sessionData = {
-          customer_id: values.customer_id,
-          session_type: values.session_type,
-          plan_id: values.plan_id,
-          start_time:
-            values.session_type === "custom"
-              ? values.custom_start_time
-              : new Date().toISOString(),
-          end_time:
-            values.session_type === "custom" ? values.custom_end_time : null,
-          price: values.session_type === "custom" ? values.custom_price : null,
-          status: "active",
-        };
-
-        const { error } = await supabase.from("sessions").insert(sessionData);
-        if (error) throw error;
-
-        toast.success("Session registered successfully");
-      } else if (values.registration_type === "plan_purchase") {
-        // Handle plan purchase
-        const selectedPlan = allPlans.find(
-          (plan) => plan.id === values.purchase_plan_id,
-        );
-        if (!selectedPlan) throw new Error("Selected plan not found");
-
-        // Calculate expiry date based on plan
-        const expiryDate = new Date();
-        if (selectedPlan.expiry_duration) {
-          expiryDate.setDate(
-            expiryDate.getDate() + selectedPlan.expiry_duration,
-          );
-        }
-
-        // Create active subscription
-        const subscriptionData = {
-          customer_id: values.customer_id,
-          plan_id: values.purchase_plan_id,
-          expiry_date: selectedPlan.expiry_duration
-            ? expiryDate.toISOString()
-            : null,
-          time_left: selectedPlan.time_included,
-          days_left: selectedPlan.days_included,
-          created_at: new Date().toISOString(),
-        };
-
-        const { error: subscriptionError } = await supabase
-          .from("subscription_active")
-          .insert(subscriptionData);
-
-        if (subscriptionError) throw subscriptionError;
-
-        // Create transaction record
-        const transactionData = {
-          customer_id: values.customer_id,
-          plan_id: values.purchase_plan_id,
-          total: selectedPlan.price,
-          date: new Date().toISOString(),
-          branch: "obrero", // You might want to make this dynamic
-          staff: 1, // You might want to get the current staff ID
-        };
-
-        const { error: transactionError } = await supabase
-          .from("transactions")
-          .insert(transactionData);
-
-        if (transactionError) throw transactionError;
-
-        // Update customer's total spent
-        const { error: customerUpdateError } = await supabase
-          .from("customers")
-          .update({
-            total_spent:
-              (selectedCustomer?.total_spent || 0) + selectedPlan.price,
-          })
-          .eq("id", values.customer_id);
-
-        if (customerUpdateError) throw customerUpdateError;
-
-        toast.success("Plan purchased successfully");
-      }
+      // TODO: Implement transaction log
 
       dialogOpenSet(false);
       setShowDialog(false);

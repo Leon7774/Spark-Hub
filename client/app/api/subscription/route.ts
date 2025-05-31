@@ -25,3 +25,36 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(validatedData);
 }
+
+export async function POST(request: NextRequest) {
+  const supabase = await createClient();
+
+  console.log("Trying to create subscription");
+
+  try {
+    console.log(request);
+    const body = await request.json();
+    const validatedData = validateData(body, subscriptionActiveSchema);
+
+    const { data, error } = await supabase
+      .from("active_subscriptions")
+      .insert(validatedData)
+      .select();
+
+    if (error) {
+      console.error(error);
+      return NextResponse.json(
+        { error: "Failed to create subscription" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(data[0], { status: 201 });
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json(
+      { error: "Failed to create subscription" },
+      { status: 500 },
+    );
+  }
+}

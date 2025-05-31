@@ -12,7 +12,7 @@ export const RouteButton = ({
 }: {
   routeText: string;
   route: string;
-  children: ReactNode;
+  children?: ReactNode;
 }) => {
   const pathname = usePathname();
   console.log(pathname);
@@ -23,7 +23,7 @@ export const RouteButton = ({
         variant={"ghost"}
         className={clsx(
           "w-[100%] hover:bg-accent2 flex h-9 justify-baseline cursor-pointer overflow-visible",
-          route === pathname && "bg-accent2 "
+          route === pathname && "bg-accent2 ",
         )}
       >
         {children}

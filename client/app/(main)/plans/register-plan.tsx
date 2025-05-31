@@ -233,7 +233,7 @@ export default function RegisterPlanForm({
     console.log("Trying to register", values);
 
     try {
-      const response = await fetch("../api/plan", {
+      const response = await fetch("/api/plan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -481,9 +481,13 @@ export default function RegisterPlanForm({
                             type="number"
                             placeholder="e.g., 600 for 10 hours"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? 0
+                                  : Number(e.target.value);
+                              field.onChange(value);
+                            }}
                             value={field.value ?? ""}
                           />
                         </FormControl>
@@ -530,8 +534,12 @@ export default function RegisterPlanForm({
                       type="number"
                       placeholder="e.g., 120 for 2 hours"
                       {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      value={field.value ?? ""}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === "" ? 0 : Number(e.target.value);
+                        field.onChange(value);
+                      }}
+                      value={field.value === 0 ? "" : field.value}
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
