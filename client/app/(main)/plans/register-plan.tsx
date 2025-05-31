@@ -157,7 +157,7 @@ const planFormSchema = z
           });
         }
       }
-    } else if (data.plan_type === "straight" || data.plan_type === "hourly") {
+    } else if (data.plan_type === "straight") {
       if (data.time_included === null || data.time_included <= 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

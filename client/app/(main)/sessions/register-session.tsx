@@ -527,24 +527,26 @@ export default function RegisterSessionForm({
                     <SelectValue placeholder="Select a plan to purchase" />
                   </SelectTrigger>
                   <SelectContent>
-                    {allPlans.map((plan) => (
-                      <SelectItem key={plan.id} value={plan.id.toString()}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {plan.name} - ₱{plan.price}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {plan.plan_type} •
-                            {plan.time_included &&
-                              ` ${plan.time_included} mins`}
-                            {plan.days_included &&
-                              ` ${plan.days_included} days`}
-                            {plan.expiry_duration &&
-                              ` • Expires in ${plan.expiry_duration} days`}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {allPlans
+                      .filter((plan) => plan.plan_type === "bundle")
+                      .map((plan) => (
+                        <SelectItem key={plan.id} value={plan.id.toString()}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {plan.name} - ₱{plan.price}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {plan.plan_type} •
+                              {plan.time_included &&
+                                ` ${plan.time_included} mins`}
+                              {plan.days_included &&
+                                ` ${plan.days_included} days`}
+                              {plan.expiry_duration &&
+                                ` • Expires in ${plan.expiry_duration} days`}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -564,6 +566,7 @@ export default function RegisterSessionForm({
         </Button>
       </form>
 
+      {/*Confirmation Dialog*/}
       <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
