@@ -3,7 +3,12 @@ import { z } from "zod";
 /* ───────────────────────────────
    Constants
 ─────────────────────────────── */
-export const SubscriptionTypes = z.enum(["bundle", "straight", "hourly"]);
+export const SubscriptionTypes = z.enum([
+  "bundle",
+  "straight",
+  "hourly",
+  "timed",
+]);
 export type SubscriptionType = z.infer<typeof SubscriptionTypes>;
 export const BranchEnum = z.enum(["obrero", "matina"]);
 
@@ -38,7 +43,7 @@ export const subscriptionPlanSchema = z.object({
   name: z.string().min(1, "Plan name is required"),
   is_active: z.boolean().default(true),
   price: z.number(),
-  plan_type: z.enum(["straight", "bundle", "hourly"]),
+  plan_type: z.enum(["straight", "bundle", "hourly", "timed"]),
   time_included: z.number().nullable(),
   time_valid_start: z.preprocess(
     (val) => {

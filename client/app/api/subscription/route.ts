@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log(request);
     const body = await request.json();
+
     const validatedData = validateSingleData(body, subscriptionActiveSchema);
 
     if (validatedData === null) {

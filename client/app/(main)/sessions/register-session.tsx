@@ -47,6 +47,9 @@ import { PhilippinePeso, Search } from "lucide-react";
 import { Customer } from "@/app/api/customers";
 import { createClient } from "@/utils/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useSWR from "swr";
+import { mutate } from "swr";
+import { SubscriptionActive, SubscriptionPlan } from "@/lib/schemas";
 
 // Enhanced schema for both session and plan registration
 export const RegistrationSchema = z.object({
@@ -58,24 +61,25 @@ export const RegistrationSchema = z.object({
   }),
   // Session fields
   session_type: z
-    .enum(["subscription", "straight", "hourly", "custom"])
+    .enum(["subscription", "straight", "hourly", "timed", "custom"])
     .nullable(),
   plan_id: z.number().nullable(),
   custom_start_time: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, {
-      message: "Time must be in HH:MM format",
-    })
-    .nullable(),
+    .regex(/^\d{2}:\d{2}$/, { message: "Time must be in HH:MM format" })
+    .optional()
+    .or(z.literal("").transform(() => undefined)), // Handle empty strings
   custom_end_time: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, {
-      message: "Time must be in HH:MM format",
-    })
-    .nullable(),
-  custom_price: z.number().nullable(),
-  // Plan purchase fields
+    .regex(/^\d{2}:\d{2}$/, { message: "Time must be in HH:MM format" })
+    .optional()
+    .or(z.literal("").transform(() => undefined)), // Handle empty strings
+  custom_session_length: z.number().optional(),
+  // Plan purchase field
   purchase_plan_id: z.number().nullable(),
+  custom_price: z.number().optional(),
+  subscription_id: z.number().nullable(),
+  branch: z.string().optional(),
 });
 
 const registrationFormSchema = RegistrationSchema;
@@ -96,52 +100,108 @@ export default function RegisterSessionForm({
   );
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [availablePlans, setAvailablePlans] = useState<Plan[]>([]);
-  const [allPlans, setAllPlans] = useState<Plan[]>([]);
+  const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
+  const [allPlans, setAllPlans] = useState<SubscriptionPlan[]>([]);
+  const [bundlePlans, setBundlePlans] = useState<SubscriptionPlan[]>([]);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionActive[]>([]);
+  const [customerSubscriptions, setCustomerSubscriptions] = useState<
+    SubscriptionActive[]
+  >([]);
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
 
-  // Load customers and plans
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+  const {
+    data: customersData,
+    error: customersError,
+    isLoading: customersLoading,
+  } = useSWR<Customer[]>("/api/customer", fetcher);
+
+  const {
+    data: plansData,
+    error: plansError,
+    isLoading: plansLoading,
+  } = useSWR<SubscriptionPlan[]>("/api/plan", fetcher);
+
+  const {
+    data: subscriptionsData,
+    error: subscriptionsError,
+    isLoading: subscriptionsLoading,
+  } = useSWR<SubscriptionActive[]>("/api/subscription", fetcher);
+
   useEffect(() => {
-    async function loadData() {
-      try {
-        const supabase = await createClient();
-
-        // Fetch customers
-        const { data: customersData, error: customersError } = await supabase
-          .from("customers")
-          .select("*");
-
-        if (customersError) throw customersError;
-        setCustomers(customersData || []);
-
-        // Fetch all plans for plan purchase
-        const { data: allPlansData, error: allPlansError } = await supabase
-          .from("subscription_plans")
-          .select("*")
-          .eq("is_active", true);
-
-        if (allPlansError) throw allPlansError;
-        setAllPlans(allPlansData || []);
-
-        // Fetch plans for session if session type is set
-        if (sessionType && sessionType !== "custom") {
-          const { data: plansData, error: plansError } = await supabase
-            .from("subscription_plans")
-            .select("*")
-            .eq("plan_type", sessionType)
-            .eq("is_active", true);
-
-          if (plansError) throw plansError;
-          setAvailablePlans(plansData || []);
-        }
-      } catch (error) {
-        console.error("Error loading data:", error);
-        toast.error("Failed to load data");
-      }
+    if (customersData) {
+      setCustomers(customersData);
     }
+  }, [customersData]);
 
-    loadData();
-  }, [sessionType]);
+  useEffect(() => {
+    if (plansData) {
+      setAllPlans(plansData);
+      // Filter for active plans for sessions
+      setAvailablePlans(plansData.filter((plan) => plan.is_active));
+      // Filter for bundle plans only for subscriptions
+      setBundlePlans(
+        plansData.filter(
+          (plan) => plan.is_active && plan.plan_type === "bundle",
+        ),
+      );
+    }
+  }, [plansData]);
+
+  useEffect(() => {
+    if (subscriptionsData) {
+      setSubscriptions(subscriptionsData);
+    }
+  }, [subscriptionsData]);
+
+  // Filter customer's active subscriptions when customer changes
+  useEffect(() => {
+    if (selectedCustomer && subscriptions.length > 0) {
+      const customerSubs = subscriptions.filter(
+        (sub) => sub.customer_id === selectedCustomer.id,
+      );
+      setCustomerSubscriptions(customerSubs);
+    } else {
+      setCustomerSubscriptions([]);
+    }
+  }, [selectedCustomer, subscriptions]);
+
+  // Get filtered plans based on session type
+  const getFilteredPlans = () => {
+    if (!sessionType || !allPlans.length) return [];
+
+    switch (sessionType) {
+      case "straight":
+        return allPlans.filter(
+          (plan) => plan.is_active && plan.plan_type === "straight",
+        );
+      case "hourly":
+        return allPlans.filter(
+          (plan) => plan.is_active && plan.plan_type === "hourly",
+        );
+      case "timed":
+        return allPlans.filter(
+          (plan) => plan.is_active && plan.plan_type === "timed",
+        );
+      case "subscription":
+        // Return plans that the customer is subscribed to
+        if (customerSubscriptions.length === 0) return [];
+        const subscribedPlanIds = customerSubscriptions.map(
+          (sub) => sub.plan_id,
+        );
+        return allPlans
+          .filter((plan) => subscribedPlanIds.includes(plan.id))
+          .map((plan) => ({
+            ...plan,
+            expiry_length: customerSubscriptions.find(
+              (sub) => sub.plan_id === plan.id,
+            )?.expiry_duration,
+          }));
+      default:
+        return [];
+    }
+  };
 
   const form = useForm<z.infer<typeof registrationFormSchema>>({
     resolver: zodResolver(registrationFormSchema),
@@ -150,10 +210,13 @@ export default function RegisterSessionForm({
       registration_type: "session",
       session_type: undefined,
       plan_id: null,
-      custom_start_time: "",
-      custom_end_time: "",
-      custom_price: 0,
       purchase_plan_id: null,
+      custom_start_time: undefined,
+      custom_end_time: undefined,
+      custom_session_length: undefined,
+      custom_price: undefined,
+      subscription_id: null,
+      branch: "", // Default branch
     },
   });
 
@@ -164,88 +227,137 @@ export default function RegisterSessionForm({
       .includes(searchQuery.toLowerCase()),
   );
 
+  // Calculate session length and time left based on plan and session type
+  const calculateSessionData = (
+    values: z.infer<typeof registrationFormSchema>,
+  ) => {
+    let sessionLength = 0;
+    let timeLeft = 0;
+
+    if (values.session_type === "custom") {
+      sessionLength = values.custom_session_length || 0;
+      timeLeft = sessionLength;
+    } else if (values.plan_id) {
+      const selectedPlan = allPlans.find((plan) => plan.id === values.plan_id);
+      if (selectedPlan) {
+        if (values.session_type === "subscription") {
+          // For subscription sessions, use remaining time from customer's subscription
+          const customerSub = customerSubscriptions.find(
+            (sub) => sub.plan_id === values.plan_id,
+          );
+          timeLeft = customerSub?.time_left || 0;
+          sessionLength = selectedPlan.time_included || 0;
+        } else {
+          // For other session types, use plan's time
+          sessionLength = selectedPlan.time_included || 0;
+          timeLeft = sessionLength;
+        }
+      }
+    }
+
+    return { sessionLength, timeLeft };
+  };
+
   async function onSubmit() {
     setShowDialog(true);
   }
 
   async function handleConfirm(values: z.infer<typeof registrationFormSchema>) {
     setLoading(true);
+
+    console.log("Trying to register");
     try {
       const supabase = await createClient();
 
       if (values.registration_type === "session") {
         // Handle session registration
+        console.log("Trying to register session here!!!!");
+
+        const { sessionLength, timeLeft } = calculateSessionData(values);
+
+        // Find subscription_id if it's a subscription session
+        let subscriptionId = null;
+        if (values.session_type === "subscription" && values.plan_id) {
+          const customerSub = customerSubscriptions.find(
+            (sub) => sub.plan_id === values.plan_id,
+          );
+          subscriptionId = customerSub?.id || null;
+        }
+
         const sessionData = {
           customer_id: values.customer_id,
-          session_type: values.session_type,
           plan_id: values.plan_id,
           start_time:
-            values.session_type === "custom"
-              ? values.custom_start_time
+            values.session_type === "custom" && values.custom_start_time
+              ? new Date(
+                  `${new Date().toDateString()} ${values.custom_start_time}`,
+                ).toISOString()
               : new Date().toISOString(),
           end_time:
-            values.session_type === "custom" ? values.custom_end_time : null,
-          price: values.session_type === "custom" ? values.custom_price : null,
-          status: "active",
+            values.session_type === "custom" && values.custom_end_time
+              ? new Date(
+                  `${new Date().toDateString()} ${values.custom_end_time}`,
+                ).toISOString()
+              : null,
+          session_length: sessionLength,
+          time_left: timeLeft,
+          subscription_id: subscriptionId,
+          branch: values.branch || "main",
         };
 
         const { error } = await supabase.from("sessions").insert(sessionData);
         if (error) throw error;
 
-        toast.success("Session registered successfully");
-      } else if (values.registration_type === "plan_purchase") {
-        // Handle plan purchase
-        const selectedPlan = allPlans.find(
-          (plan) => plan.id === values.purchase_plan_id,
-        );
-        if (!selectedPlan) throw new Error("Selected plan not found");
-
-        // Calculate expiry date based on plan
-        const expiryDate = new Date();
-        if (selectedPlan.expiry_duration) {
-          expiryDate.setDate(
-            expiryDate.getDate() + selectedPlan.expiry_duration,
+        // If it's a subscription session, update the subscription's remaining time
+        if (values.session_type === "subscription" && subscriptionId) {
+          const customerSub = customerSubscriptions.find(
+            (sub) => sub.plan_id === values.plan_id,
           );
+          if (customerSub) {
+            const newTimeLeft = Math.max(
+              0,
+              (customerSub.time_left || 0) - sessionLength,
+            );
+            await supabase
+              .from("subscriptions")
+              .update({ time_left: newTimeLeft })
+              .eq("id", subscriptionId);
+          }
         }
 
-        // Create active subscription
-        const subscriptionData = {
-          customer_id: values.customer_id,
-          plan_id: values.purchase_plan_id,
-          expiry_date: selectedPlan.expiry_duration
-            ? expiryDate.toISOString()
-            : null,
-          time_left: selectedPlan.time_included,
-          days_left: selectedPlan.days_included,
-          created_at: new Date().toISOString(),
-        };
+        mutate("/api/subscription");
+        mutate("/api/customer");
+        mutate("/api/session");
+        toast.success("Session registered successfully");
+      } else if (values.registration_type === "plan_purchase") {
+        // Handle plan purchase using API
+        const response = await fetch(
+          `/api/customer/${form.getValues().customer_id}/subscriptions`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              customer_id: values.customer_id,
+              plan_id: values.purchase_plan_id,
+            }),
+          },
+        );
 
-        const { error: subscriptionError } = await supabase
-          .from("subscription_active")
-          .insert(subscriptionData);
+        const result = await response.json();
 
-        if (subscriptionError) throw subscriptionError;
+        if (!response.ok) {
+          console.log(result.error.message);
+          throw new Error(result.error || "Failed to purchase plan");
+        }
 
-        // TODO: Add log
+        toast.success(result.message || "Plan purchased successfully");
 
-        const { error: transactionError } = await supabase
-          .from("transactions")
-          .insert(transactionData);
-
-        if (transactionError) throw transactionError;
-
-        // Update customer's total spent
-        const { error: customerUpdateError } = await supabase
-          .from("customers")
-          .update({
-            total_spent:
-              (selectedCustomer?.total_spent || 0) + selectedPlan.price,
-          })
-          .eq("id", values.customer_id);
-
-        if (customerUpdateError) throw customerUpdateError;
-
-        toast.success("Plan purchased successfully");
+        // Mutate SWR data to refresh
+        mutate("/api/subscription");
+        mutate("/api/customer");
+        mutate("/api/session");
       }
 
       dialogOpenSet(false);
@@ -255,8 +367,12 @@ export default function RegisterSessionForm({
       setSessionType(undefined);
       setRegistrationType("session");
     } catch (error) {
-      console.error("Error processing registration:", error);
-      toast.error("Failed to process registration");
+      console.error("Error processing registration:", error.message);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to process registration",
+      );
     } finally {
       setLoading(false);
     }
@@ -267,7 +383,7 @@ export default function RegisterSessionForm({
     if (values.registration_type === "session") {
       return "Are you sure you want to register this session? This action cannot be undone.";
     } else {
-      const selectedPlan = allPlans.find(
+      const selectedPlan = bundlePlans.find(
         (plan) => plan.id === values.purchase_plan_id,
       );
       return `Are you sure you want to purchase the ${selectedPlan?.name} plan for ₱${selectedPlan?.price}? This will charge the customer and activate their subscription.`;
@@ -398,6 +514,7 @@ export default function RegisterSessionForm({
                       <SelectItem value="subscription">Subscription</SelectItem>
                       <SelectItem value="straight">Straight</SelectItem>
                       <SelectItem value="hourly">Hourly</SelectItem>
+                      <SelectItem value="timed">Timed</SelectItem>
                       <SelectItem value="custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
@@ -413,18 +530,63 @@ export default function RegisterSessionForm({
                 name="plan_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Select Plan</FormLabel>
+                    <FormLabel>
+                      Select Plan
+                      {sessionType === "subscription" &&
+                        customerSubscriptions.length === 0 && (
+                          <span className="text-sm text-muted-foreground ml-2">
+                            (No active subscriptions)
+                          </span>
+                        )}
+                    </FormLabel>
                     <Select
                       onValueChange={(value) => field.onChange(Number(value))}
                       value={field.value?.toString() || ""}
+                      disabled={
+                        sessionType === "subscription" &&
+                        customerSubscriptions.length === 0
+                      }
                     >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a plan" />
+                      <SelectTrigger className="w-full !h-15">
+                        <SelectValue
+                          placeholder={
+                            sessionType === "subscription" &&
+                            customerSubscriptions.length === 0
+                              ? "Customer has no active subscriptions"
+                              : `Select a ${sessionType} plan`
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        {availablePlans.map((plan) => (
+                        {getFilteredPlans().map((plan) => (
                           <SelectItem key={plan.id} value={plan.id.toString()}>
-                            {plan.name} - ₱{plan.price}
+                            <div className="flex flex-col items-baseline">
+                              <span className="font-medium">
+                                {plan.name} - ₱{plan.price}
+                              </span>
+                              <span className="text-sm text-muted-foreground capitalize">
+                                {plan.plan_type}
+                                {plan.time_included &&
+                                  ` • ${plan.time_included} mins`}
+                                {plan.days_included &&
+                                  ` • ${plan.days_included} days`}
+                                {sessionType === "subscription" &&
+                                  (() => {
+                                    const subscription =
+                                      customerSubscriptions.find(
+                                        (sub) => sub.plan_id === plan.id,
+                                      );
+                                    return subscription ? (
+                                      <>
+                                        {subscription.time_left &&
+                                          ` • ${subscription.time_left} mins left`}
+                                        {subscription.days_left &&
+                                          ` • ${subscription.days_left} days left`}
+                                      </>
+                                    ) : null;
+                                  })()}
+                              </span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -476,6 +638,27 @@ export default function RegisterSessionForm({
                 </div>
                 <FormField
                   control={form.control}
+                  name="custom_session_length"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Session Length (minutes)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Enter session length in minutes"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="custom_price"
                   render={({ field }) => (
                     <FormItem>
@@ -500,33 +683,58 @@ export default function RegisterSessionForm({
                 />
               </div>
             )}
+
+            {/* Branch Selection */}
+            <FormField
+              control={form.control}
+              name="branch"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Branch</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || "main"}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select branch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="obrero">Obrero</SelectItem>
+                      <SelectItem value="matina">Matina</SelectItem>
+                      {/* Add more branches as needed */}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </>
         )}
 
-        {/* Plan Purchase Fields */}
+        {/* Plan Purchase Fields - Only Bundle Plans */}
         {registrationType === "plan_purchase" && (
           <FormField
             control={form.control}
             name="purchase_plan_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Select Plan to Purchase</FormLabel>
+                <FormLabel>Select Bundle Plan to Purchase</FormLabel>
                 <Select
                   onValueChange={(value) => field.onChange(Number(value))}
                   value={field.value?.toString() || ""}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a plan to purchase" />
+                  <SelectTrigger className="w-full !h-15">
+                    <SelectValue placeholder="Select a bundle plan to purchase" />
                   </SelectTrigger>
                   <SelectContent>
-                    {allPlans.map((plan) => (
-                      <SelectItem key={plan.id} value={plan.id.toString()}>
-                        <div className="flex flex-col">
+                    {bundlePlans.map((plan) => (
+                      <SelectItem key={plan.id} value={plan.id?.toString()}>
+                        <div className="flex flex-col items-baseline px">
                           <span className="font-medium">
                             {plan.name} - ₱{plan.price}
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            {plan.plan_type} •
+                            Bundle Plan •
                             {plan.time_included &&
                               ` ${plan.time_included} mins`}
                             {plan.days_included &&
@@ -545,7 +753,20 @@ export default function RegisterSessionForm({
           />
         )}
 
-        <Button type="submit" disabled={isLoading}>
+        <Button
+          type="submit"
+          onClick={() => {
+            try {
+              registrationFormSchema.parse(form.getValues());
+            } catch (err) {
+              if (err instanceof z.ZodError) {
+                console.log(err.flatten()); // 👈 Clean object format
+                // or: console.error(err.errors); // raw array of issues
+              }
+            }
+          }}
+          disabled={isLoading}
+        >
           {isLoading
             ? registrationType === "session"
               ? "Registering..."
@@ -571,7 +792,9 @@ export default function RegisterSessionForm({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => handleConfirm(form.getValues())}
+              onClick={() => {
+                handleConfirm(form.getValues());
+              }}
               disabled={isLoading}
             >
               {isLoading ? "Processing..." : "Confirm"}

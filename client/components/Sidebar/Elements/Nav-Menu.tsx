@@ -49,7 +49,7 @@ export const RouteSelect = () => {
           </Link>
         </CollapsibleTrigger>
         <div className="flex">
-          <CollapsibleContent className="bg-primary/50 w-0.5 h-30 ml-5.5"></CollapsibleContent>
+          <CollapsibleContent className="bg-primary/50 w-0.5 h-40 ml-5.5"></CollapsibleContent>
           <div className="flex flex-col gap-2 mt-1 ml-2">
             <CollapsibleContent>
               <RouteButton
@@ -69,6 +69,13 @@ export const RouteSelect = () => {
               <RouteButton
                 route="/logs/expired_subscriptions"
                 routeText="Expired Subscriptions"
+                className="w-35 h-8 text-xs"
+              ></RouteButton>
+            </CollapsibleContent>
+            <CollapsibleContent>
+              <RouteButton
+                route="/logs/financial_log"
+                routeText="Financial Log"
                 className="w-35 h-8 text-xs"
               ></RouteButton>
             </CollapsibleContent>

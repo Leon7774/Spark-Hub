@@ -5,11 +5,41 @@ import { subscriptionPlanSchema } from "@/lib/schemas";
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
 
-  const type = request.nextUrl.searchParams.get("type");
-  if (!type) {
+  const planType = request.nextUrl.searchParams.get("plan_type");
+
+  // If no type or planType is provided, fetch all plans
+  if (!planType) {
     const { data, error } = await supabase
       .from("subscription_plans")
       .select("*");
+
+    if (error || !data) {
+      return NextResponse.json({ error: "Plans not found" }, { status: 404 });
+    }
+
+    // Transform and validate the data
+    const validatedPlans = data
+      .map((plan) => {
+        try {
+          return subscriptionPlanSchema.parse({
+            ...plan,
+            created_at: plan.created_at ? new Date(plan.created_at) : null,
+          });
+        } catch (error) {
+          console.error("Invalid plan data:", error);
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    return NextResponse.json(validatedPlans);
+    // If type or planType is provided, fetch plans based on type and planType
+  } else {
+    const { data, error } = await supabase
+      .from("subscription_plans")
+      .select("*")
+      .eq("plan_type", planType);
+
     if (error || !data) {
       return NextResponse.json({ error: "Plans not found" }, { status: 404 });
     }
