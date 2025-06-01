@@ -37,6 +37,11 @@ export function ActiveSubscriptions<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 15, // 👈 set your default rows per page here
+  });
+
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
@@ -53,6 +58,7 @@ export function ActiveSubscriptions<TData, TValue>({
       sorting,
       columnFilters,
       rowSelection,
+      pagination,
     },
   });
 
