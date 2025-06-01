@@ -18,7 +18,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Sparkle } from "lucide-react";
+import { useState, useEffect } from "react";
 
+// Schema for admin key verification
+const adminKeySchema = z.object({
+  adminKey: z.string().min(1, {
+    message: "Admin key is required",
+  }),
+});
+
+// Schema for registration
 const registerFormSchema = z
   .object({
     email: z.string().email({
@@ -36,7 +45,20 @@ const registerFormSchema = z
 
 export default function RegisterPage() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof registerFormSchema>>({
+  const [adminKeyVerified, setAdminKeyVerified] = useState(false);
+  const [correctAdminKey, setCorrectAdminKey] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Form for admin key verification
+  const adminKeyForm = useForm<z.infer<typeof adminKeySchema>>({
+    resolver: zodResolver(adminKeySchema),
+    defaultValues: {
+      adminKey: "",
+    },
+  });
+
+  // Form for registration
+  const registerForm = useForm<z.infer<typeof registerFormSchema>>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
       email: "",
@@ -45,7 +67,40 @@ export default function RegisterPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof registerFormSchema>) {
+  useEffect(() => {
+    const fetchAdminKey = async () => {
+      try {
+        const supabase = await createClient();
+        const { data, error } = await supabase
+          .from("keys")
+          .select("value")
+          .single();
+
+        if (error) throw error;
+        if (data) setCorrectAdminKey(data.value);
+      } catch (error) {
+        console.error("Error fetching admin key:", error);
+        toast.error("Failed to verify admin key configuration");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminKey();
+  }, []);
+
+  const verifyAdminKey = async (values: z.infer<typeof adminKeySchema>) => {
+    if (values.adminKey === correctAdminKey) {
+      setAdminKeyVerified(true);
+      toast.success("Admin key verified");
+      adminKeyForm.reset(); // Clear the admin key form after verification
+    } else {
+      toast.error("Invalid admin key");
+      adminKeyForm.setValue("adminKey", ""); // Clear the input on wrong key
+    }
+  };
+
+  async function handleRegister(values: z.infer<typeof registerFormSchema>) {
     try {
       const supabase = await createClient();
 
@@ -69,6 +124,14 @@ export default function RegisterPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-400"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full pb-20 flex items-center justify-center flex-col bg-background-2">
       <div className="flex items-center justify-center flex-col p-10 rounded-4xl bg-background shadow-lg">
@@ -88,60 +151,110 @@ export default function RegisterPage() {
         </div>
 
         <div className="w-80">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full bg-orange-400">
-                Register
-              </Button>
-            </form>
-          </Form>
-        </div>
+          {!adminKeyVerified ? (
+            <Form {...adminKeyForm}>
+              <form
+                onSubmit={adminKeyForm.handleSubmit(verifyAdminKey)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={adminKeyForm.control}
+                  name="adminKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Admin Key</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          {...field}
+                          value={field.value || ""} // Ensure empty string if undefined
+                          onChange={(e) => {
+                            field.onChange(e.target.value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full bg-orange-400">
+                  Verify Admin Key
+                </Button>
+              </form>
+            </Form>
+          ) : (
+            <>
+              <Form {...registerForm}>
+                <form
+                  onSubmit={registerForm.handleSubmit(handleRegister)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={registerForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="name@example.com"
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={registerForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={registerForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            {...field}
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full bg-orange-400">
+                    Register
+                  </Button>
+                </form>
+              </Form>
 
-        <p className="mt-10 text-center text-sm w-60 mb-2 text-primary/40">
-          Already have an account?
-        </p>
-        <Link href="/login">
-          <Button className="bg-orange-400">Login</Button>
-        </Link>
+              <p className="mt-10 text-center text-sm w-60 mb-2 text-primary/40">
+                Already have an account?
+              </p>
+              <Link href="/login">
+                <Button className="bg-orange-400">Login</Button>
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
