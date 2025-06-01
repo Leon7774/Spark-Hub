@@ -26,6 +26,12 @@ export const columns: ColumnDef<z.infer<typeof subscriptionActiveSchema>>[] = [
         {row.original.customer?.first_name} {row.original.customer?.last_name}
       </div>
     ),
+    filterFn: (row, columnId, filterValue) => {
+      const customer = row.original.customer;
+      const fullName =
+        `${customer?.first_name ?? ""} ${customer?.last_name ?? ""}`.toLowerCase();
+      return fullName.includes(filterValue.toLowerCase());
+    },
     size: 120,
   },
   {
