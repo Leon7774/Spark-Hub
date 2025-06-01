@@ -45,7 +45,7 @@ function ActionsCell({ session }: { session: Session }) {
               if (session.plan?.type === "hourly") {
                 setShowConfirmDialog(true);
               } else {
-                sessionLogout(session.id);
+                sessionLogout(session);
               }
             }}
           >
@@ -59,7 +59,7 @@ function ActionsCell({ session }: { session: Session }) {
         isOpen={showConfirmDialog}
         onClose={() => setShowConfirmDialog(false)}
         onConfirm={() => {
-          sessionLogout(session.id);
+          sessionLogout(session);
           setShowConfirmDialog(false);
         }}
       />

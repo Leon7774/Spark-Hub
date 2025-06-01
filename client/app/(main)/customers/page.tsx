@@ -20,8 +20,6 @@ import useSWR from "swr";
 // TODO: Use swr instead of datacontext
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-await fetch("/api/customer/5/subscriptions");
-
 export default function Page() {
   const { customers } = useDataContext();
   const [open, setOpen] = useState(false);

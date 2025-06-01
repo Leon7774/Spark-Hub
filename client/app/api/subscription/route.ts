@@ -20,51 +20,53 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const searchParams = request.nextUrl.searchParams;
 
-    // Get pagination parameters
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const offset = (page - 1) * limit;
-
-    // Get filters
-    const status = searchParams.get("status");
-    const customerId = searchParams.get("customerId");
-
-    let query = supabase
+    const { data, error, count } = await supabase
       .from("subscriptions")
-      .select(
-        `
-        id,
-        created_at,
-        customer_id,
-        plan_id,
-        expiry_date,
-        days_left,
-        last_login,
-        time_left,
-        status,
-        customers (
-          first_name,
-          last_name
-        ),
-        subscription_plans (
-          name,
-          plan_type
-        )
-      `,
-        { count: "exact" },
-      )
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    // Apply filters if provided
-    if (status) {
-      query = query.eq("status", status);
-    }
-    if (customerId) {
-      query = query.eq("customer_id", customerId);
-    }
-
-    const { data, error, count } = await query;
+      .select("*");
+    //
+    // // Get pagination parameters
+    // const page = parseInt(searchParams.get("page") || "1");
+    // const limit = parseInt(searchParams.get("limit") || "10");
+    // const offset = (page - 1) * limit;
+    //
+    // // Get filters
+    // const status = searchParams.get("status");
+    // const customerId = searchParams.get("customerId");
+    //
+    // let query = supabase
+    //   .from("subscriptions")
+    //   .select(
+    //     `
+    //     id,
+    //     created_at,
+    //     customer_id,
+    //     plan_id,
+    //     expiry_date,
+    //     days_left,
+    //     last_login,
+    //     time_left,
+    //     status,
+    //     customers (
+    //       first_name,
+    //       last_name
+    //     ),
+    //     subscription_plans (
+    //       name,
+    //       plan_type
+    //     )
+    //   `,
+    //     { count: "exact" },
+    //   )
+    //   .order("created_at", { ascending: false })
+    //   .range(offset, offset + limit - 1);
+    //
+    // // Apply filters if provided
+    // if (status) {
+    //   query = query.eq("status", status);
+    // }
+    // if (customerId) {
+    //   query = query.eq("customer_id", customerId);
+    // }
 
     if (error) {
       return NextResponse.json(
@@ -83,14 +85,16 @@ export async function GET(request: NextRequest) {
     //   plan_type: subscription.subscription_plans?.plan_type || "Unknown",
     // }));
 
-    return NextResponse.json({
-      data: data,
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-      },
-    });
+    // return NextResponse.json({
+    //   data: data,
+    //   pagination: {
+    //     page,
+    //     limit,
+    //     total: count || 0,
+    //   },
+    // });
+
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching subscriptions:", error);
     return NextResponse.json(
@@ -104,6 +108,8 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const body = await request.json();
+
+    console.log("Plan ID: " + body.plan_id);
 
     // Validate request body
     const validatedData = subscriptionSchema.partial().parse(body);

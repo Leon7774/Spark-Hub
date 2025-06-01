@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { mutate } from "swr";
 import { Session } from "@/lib/schemas";
+import { differenceInMinutes } from "date-fns";
 
 export async function getCustomerById(id: number) {
   const res = await fetch(`/api/customers/${id}`);
@@ -43,16 +44,21 @@ export async function getPlanById(id: number) {
  */
 
 export async function sessionLogout(session: Session) {
-  if (session.plan_type === "bundle") {
+  console.log("SESSION PLAN: " + session.plan);
+
+  if (session.plan_type === "bundle" && session.plan?.minutes) {
     const subscription = await fetch(
       `/api/subscription/${session.subscription?.id}`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          delete: true,
+          length: differenceInMinutes(
+            session.start_time,
+            session.end_time || 0,
+          ),
         }),
       },
     );
@@ -60,7 +66,7 @@ export async function sessionLogout(session: Session) {
     }
   }
 
-  const res = await fetch(`api/session/${id}/logout`, {
+  const res = await fetch(`api/session/${session.id}/logout`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -21,8 +21,10 @@ const Subscriptions = () => {
 
   let enrichedData: SubscriptionActive[] = [];
 
+  console.log(data);
+
   if (!isLoading && !customersLoading && !plansLoading) {
-    enrichedData = enrichSubscriptions(data.data, customers, plans);
+    enrichedData = enrichSubscriptions(data, customers, plans);
   }
 
   return (

@@ -185,6 +185,12 @@ export default function BundleSubscriptionForm({
 
       values.created_at = new Date(Date.now());
 
+      if (selectedPlan.time_included != undefined) {
+        values.time_left = selectedPlan.time_included;
+      } else if (selectedPlan.days_included != undefined) {
+        values.days_left = selectedPlan.days_included;
+      }
+
       // Create new bundle subscription
 
       const response = await fetch("/api/subscription", {

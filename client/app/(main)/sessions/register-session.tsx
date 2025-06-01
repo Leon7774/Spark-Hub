@@ -308,22 +308,22 @@ export default function RegisterSessionForm({
         const { error } = await supabase.from("sessions").insert(sessionData);
         if (error) throw error;
 
-        // If it's a subscription session, update the subscription's remaining time
-        if (values.session_type === "subscription" && subscriptionId) {
-          const customerSub = customerSubscriptions.find(
-            (sub) => sub.plan_id === values.plan_id,
-          );
-          if (customerSub) {
-            const newTimeLeft = Math.max(
-              0,
-              (customerSub.time_left || 0) - sessionLength,
-            );
-            await supabase
-              .from("subscriptions")
-              .update({ time_left: newTimeLeft })
-              .eq("id", subscriptionId);
-          }
-        }
+        // // If it's a subscription session, update the subscription's remaining time
+        // if (values.session_type === "subscription" && subscriptionId) {
+        //   const customerSub = customerSubscriptions.find(
+        //     (sub) => sub.plan_id === values.plan_id,
+        //   );
+        //   if (customerSub) {
+        //     const newTimeLeft = Math.max(
+        //       0,
+        //       (customerSub.time_left || 0) - sessionLength,
+        //     );
+        //     await supabase
+        //       .from("subscriptions")
+        //       .update({ time_left: newTimeLeft })
+        //       .eq("id", subscriptionId);
+        //   }
+        // }
 
         mutate("/api/subscription");
         mutate("/api/customer");

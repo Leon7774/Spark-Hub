@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
       .eq("is_active", true)
       .single();
 
+    console.log(plan);
+
     if (planError || !plan) {
+      console.log(planError);
       return NextResponse.json(
         { error: "Plan not found or not a valid bundle plan" },
         { status: 404 },
@@ -79,7 +82,7 @@ export async function POST(request: NextRequest) {
     };
 
     const { data: subscription, error: subscriptionError } = await supabase
-      .from("subscription_active")
+      .from("subscriptions")
       .insert(subscriptionData)
       .select()
       .single();
