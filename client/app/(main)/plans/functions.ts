@@ -17,7 +17,6 @@ export async function handleDeactivate(id: number | undefined) {
   if (res.ok) {
     toast.success("Plan deactivated successfully");
   } else {
-    console.log(await res.text());
     toast.error("Failed to deactivate plan");
   }
 }

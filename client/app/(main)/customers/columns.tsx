@@ -14,6 +14,7 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 
 export const columns: ColumnDef<Customer>[] = [
   {
@@ -93,7 +94,9 @@ export const columns: ColumnDef<Customer>[] = [
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem>Copy payment ID</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>View customer</DropdownMenuItem>
+              <Link href={`/customers/${row.original.id}`}>
+                <DropdownMenuItem>View customer</DropdownMenuItem>
+              </Link>
               <DropdownMenuItem>View payment details</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

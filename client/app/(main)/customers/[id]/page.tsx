@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Card,
@@ -11,125 +10,62 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { format, subDays, addDays } from "date-fns";
+import { format } from "date-fns";
 import {
   ArrowLeft,
   Clock,
   DollarSign,
-  User,
   Calendar,
   AlertCircle,
 } from "lucide-react";
-import { toast } from "sonner";
+import { Customer, Session, SubscriptionActive } from "@/lib/schemas";
+import useSWR from "swr";
 
-interface Subscription {
-  id: number;
-  plan_name: string;
-  plan_type: string;
-  created_at: string;
-  expiry_date: string;
-  status: "active" | "expired" | "cancelled";
-  time_left: number | null;
-  price: number;
+interface CustomerDetails extends Customer {
+  subscriptions: SubscriptionActive[];
+  sessions: Session[];
 }
 
-interface CustomerDetails {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  phone?: string;
-  created_at: string;
-  total_spent: number;
-  total_hours: number;
-  active_subscriptions: number;
-  subscriptions: Subscription[];
-}
-
-// Dummy subscription data
-const DUMMY_SUBSCRIPTIONS = [
-  {
-    id: 1,
-    plan_name: "Premium Monthly",
-    plan_type: "bundle",
-    created_at: subDays(new Date(), 15).toISOString(),
-    expiry_date: addDays(new Date(), 15).toISOString(),
-    status: "active" as const,
-    time_left: 7200, // 120 hours in minutes
-    price: 1200,
-  },
-  {
-    id: 2,
-    plan_name: "Hourly Package",
-    plan_type: "hourly",
-    created_at: subDays(new Date(), 30).toISOString(),
-    expiry_date: addDays(new Date(), -5).toISOString(),
-    status: "expired" as const,
-    time_left: 0,
-    price: 500,
-  },
-  {
-    id: 3,
-    plan_name: "Basic Weekly",
-    plan_type: "straight",
-    created_at: subDays(new Date(), 60).toISOString(),
-    expiry_date: subDays(new Date(), 25).toISOString(),
-    status: "expired" as const,
-    time_left: null,
-    price: 300,
-  },
-];
-
-// Dummy customer data
-const DUMMY_CUSTOMER: CustomerDetails = {
-  id: 1,
-  first_name: "John",
-  last_name: "Doe",
-  email: "john.doe@example.com",
-  phone: "+1 (555) 123-4567",
-  created_at: subDays(new Date(), 65).toISOString(),
-  total_spent: 2000,
-  total_hours: 85.5,
-  active_subscriptions: 1,
-  subscriptions: DUMMY_SUBSCRIPTIONS,
-};
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function CustomerDetailsPage() {
   const router = useRouter();
-  const [customer, setCustomer] = useState<CustomerDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const params = useParams();
+  const customerId = params.id as string;
 
-  useEffect(() => {
-    // Simulate API call with timeout
-    const timer = setTimeout(() => {
-      try {
-        setCustomer(DUMMY_CUSTOMER);
-      } catch (err) {
-        setError("Failed to load customer data");
-        toast.error("Failed to load customer details");
-      } finally {
-        setLoading(false);
-      }
-    }, 500);
+  const {
+    data: customer,
+    error,
+    isLoading,
+  } = useSWR<CustomerDetails>(`/api/customer/${customerId}`, fetcher);
 
-    return () => clearTimeout(timer);
-  }, []);
+  const getSubscriptionStatusBadge = (subscription: SubscriptionActive) => {
+    if (!subscription.expiry_date)
+      return <Badge variant="outline">No Expiry</Badge>;
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case "expired":
-        return <Badge variant="destructive">Expired</Badge>;
-      case "cancelled":
-        return <Badge variant="outline">Cancelled</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+    const now = new Date();
+    const expiryDate = new Date(subscription.expiry_date);
+
+    if (expiryDate < now) {
+      return <Badge variant="destructive">Expired</Badge>;
     }
+
+    if (subscription.time_left && subscription.time_left <= 0) {
+      return <Badge variant="destructive">Time Used</Badge>;
+    }
+
+    return <Badge className="bg-green-100 text-green-800">Active</Badge>;
   };
 
-  if (loading) {
+  const getCustomerStatusBadge = (hasActiveSubscriptions: boolean) => {
+    return hasActiveSubscriptions ? (
+      <Badge className="bg-green-100 text-green-800">Active</Badge>
+    ) : (
+      <Badge variant="outline">Inactive</Badge>
+    );
+  };
+
+  if (isLoading) {
     return (
       <div className="container py-8">
         <div className="animate-pulse space-y-4">
@@ -143,10 +79,20 @@ export default function CustomerDetailsPage() {
   if (error || !customer) {
     return (
       <div className="container py-8">
-        <div className="text-red-500">{error || "Customer not found"}</div>
+        <div className="text-red-500">
+          {error?.message || "Customer not found"}
+        </div>
       </div>
     );
   }
+
+  const activeSubscriptions =
+    customer.subscriptions?.filter((sub) => {
+      if (!sub.expiry_date) return true;
+      const now = new Date();
+      const expiryDate = new Date(sub.expiry_date);
+      return expiryDate > now && (!sub.time_left || sub.time_left > 0);
+    }).length || 0;
 
   return (
     <div className="container py-8 space-y-6">
@@ -161,26 +107,11 @@ export default function CustomerDetailsPage() {
             <h1 className="text-3xl md:text-4xl font-bold">
               {customer.first_name} {customer.last_name}
             </h1>
-            {getStatusBadge(
-              customer.active_subscriptions > 0 ? "active" : "inactive",
-            )}
+            {getCustomerStatusBadge(activeSubscriptions > 0)}
           </div>
           <p className="text-muted-foreground mt-1">
             Member since {format(new Date(customer.created_at), "MMMM d, yyyy")}
           </p>
-
-          {customer.email && (
-            <div className="flex items-center mt-2 text-sm text-muted-foreground">
-              <User className="h-4 w-4 mr-2" />
-              {customer.email}
-            </div>
-          )}
-          {customer.phone && (
-            <div className="flex items-center mt-1 text-sm text-muted-foreground">
-              <span className="mr-2">📱</span>
-              {customer.phone}
-            </div>
-          )}
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -193,7 +124,7 @@ export default function CustomerDetailsPage() {
           </Badge>
           <Badge variant="outline" className="text-base px-4 py-2 gap-2">
             <Calendar className="h-4 w-4" />
-            {customer.active_subscriptions} active plans
+            {activeSubscriptions} active plans
           </Badge>
         </div>
       </div>
@@ -219,8 +150,7 @@ export default function CustomerDetailsPage() {
                       <div>
                         <h3 className="font-medium text-lg">{sub.plan_name}</h3>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary">{sub.plan_type}</Badge>
-                          {getStatusBadge(sub.status)}
+                          {getSubscriptionStatusBadge(sub)}
                           {sub.time_left !== null && (
                             <span className="text-sm text-muted-foreground">
                               {sub.time_left} min left
@@ -229,7 +159,6 @@ export default function CustomerDetailsPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">₱{sub.price.toFixed(2)}</p>
                         <p className="text-sm text-muted-foreground">
                           {format(new Date(sub.created_at), "MMM d, yyyy")}
                           {sub.expiry_date && (
@@ -256,18 +185,71 @@ export default function CustomerDetailsPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
+        {/* Recent Sessions */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>Recent Sessions</CardTitle>
             <CardDescription>
               Latest actions performed by or for this customer
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Activity log coming soon</p>
-            </div>
+            {customer.sessions?.length > 0 ? (
+              <div className="space-y-4">
+                {customer.sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <h3 className="font-medium text-lg">
+                          {session.plan?.name || "Custom Session"}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary">
+                            {session.plan_type || "Custom"}
+                          </Badge>
+                          {session.end_time ? (
+                            <Badge variant="outline">Completed</Badge>
+                          ) : (
+                            <Badge className="bg-green-100 text-green-800">
+                              Active
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">
+                          Started{" "}
+                          {format(
+                            new Date(session.start_time),
+                            "MMM d, h:mm a"
+                          )}
+                        </p>
+                        {session.end_time && (
+                          <p className="text-sm text-muted-foreground">
+                            Ended{" "}
+                            {format(
+                              new Date(session.end_time),
+                              "MMM d, h:mm a"
+                            )}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium">No sessions found</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This customer hasn&#39;t had any sessions yet.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

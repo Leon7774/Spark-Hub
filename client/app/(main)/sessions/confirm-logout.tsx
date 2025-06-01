@@ -26,16 +26,25 @@ export default function ConfirmLogoutDialog({
   onConfirm,
 }: ConfirmLogoutDialogProps) {
   const [totalBill, setTotalBill] = useState<number>(0);
-  const [hoursUsed, setHoursUsed] = useState<number>(0);
+  const [minutesUsed, setMinutesUsed] = useState<number>(0);
+  const [formattedTime, setFormattedTime] = useState<string>("");
 
   useEffect(() => {
     if (session && session.plan?.type === "hourly") {
       const startTime = new Date(session.start_time);
       const now = new Date();
-      const minutesUsed = differenceInMinutes(now, startTime);
-      const hours = Math.ceil(minutesUsed / 60); // Round up to the nearest hour
-      setHoursUsed(hours);
-      setTotalBill(hours * (session.plan.price || 0));
+      const length = differenceInMinutes(now, startTime);
+      // const minutes = Math.ceil(minutesUsed / 60); // Round up to the nearest hour
+      setMinutesUsed(length);
+      // Price per minute
+      setTotalBill(minutesUsed * (session.plan.price / 60 || 0));
+      const hours = Math.floor(minutesUsed / 60);
+      const minutes = minutesUsed % 60;
+
+      setFormattedTime(
+        (hours > 0 ? `${hours} hour${hours !== 1 ? "s" : ""} ` : "") +
+          `${minutes} minute${minutes !== 1 ? "s" : ""}`
+      );
     }
   }, [session]);
 
@@ -50,7 +59,8 @@ export default function ConfirmLogoutDialog({
             <>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Session Duration: {hoursUsed} hour{hoursUsed !== 1 ? "s" : ""}
+                  Session Duration: {formattedTime}
+                  {minutesUsed !== 1 ? "s" : ""}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Rate: ₱{session.plan.price}/hour

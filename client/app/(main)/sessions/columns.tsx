@@ -13,6 +13,59 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Session } from "@/lib/schemas";
 import { differenceInDays, differenceInMinutes, format } from "date-fns";
 import { sessionLogout } from "@/app/(main)/sessions/functions";
+import { useState } from "react";
+import ConfirmLogoutDialog from "./confirm-logout";
+
+function ActionsCell({ session }: { session: Session }) {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          asChild
+          className="flex items-center justify-center outline-none focus-visible:ring-0"
+        >
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-white">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(session.id.toString())}
+          >
+            Copy session ID
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>View customer</DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              if (session.plan?.type === "hourly") {
+                setShowConfirmDialog(true);
+              } else {
+                sessionLogout(session.id);
+              }
+            }}
+          >
+            Logout
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmLogoutDialog
+        session={session}
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={() => {
+          sessionLogout(session.id);
+          setShowConfirmDialog(false);
+        }}
+      />
+    </>
+  );
+}
 
 export const columns: ColumnDef<Session>[] = [
   {
@@ -136,41 +189,6 @@ export const columns: ColumnDef<Session>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            asChild
-            className="flex items-center justify-center outline-none focus-visible:ring-0"
-          >
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-white">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() =>
-                navigator.clipboard.writeText(payment.id.toString())
-              }
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                sessionLogout(row.original.id);
-              }}
-            >
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <ActionsCell session={row.original} />,
   },
 ];
