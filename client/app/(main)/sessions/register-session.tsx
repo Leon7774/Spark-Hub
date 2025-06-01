@@ -266,23 +266,24 @@ export default function RegisterSessionForm({
     setLoading(true);
 
     console.log("Trying to register");
+
+    const { sessionLength, timeLeft } = calculateSessionData(values);
+
+    // Find subscription_id if it's a subscription session
+    let subscriptionId = null;
+    if (values.session_type === "subscription" && values.plan_id) {
+      const customerSub = customerSubscriptions.find(
+        (sub) => sub.plan_id === values.plan_id,
+      );
+      subscriptionId = customerSub?.id || null;
+    }
+
     try {
       const supabase = await createClient();
 
       if (values.registration_type === "session") {
         // Handle session registration
         console.log("Trying to register session here!!!!");
-
-        const { sessionLength, timeLeft } = calculateSessionData(values);
-
-        // Find subscription_id if it's a subscription session
-        let subscriptionId = null;
-        if (values.session_type === "subscription" && values.plan_id) {
-          const customerSub = customerSubscriptions.find(
-            (sub) => sub.plan_id === values.plan_id,
-          );
-          subscriptionId = customerSub?.id || null;
-        }
 
         const sessionData = {
           customer_id: values.customer_id,
@@ -330,6 +331,9 @@ export default function RegisterSessionForm({
         mutate("/api/session");
         toast.success("Session registered successfully");
       } else if (values.registration_type === "plan_purchase") {
+        /*
+        PLAN PURCHASE
+         */
         // Handle plan purchase using API
         const response = await fetch(
           `/api/customer/${form.getValues().customer_id}/subscriptions`,
@@ -349,6 +353,38 @@ export default function RegisterSessionForm({
 
         if (!response.ok) {
           console.log(result.error.message);
+          throw new Error(result.error || "Failed to purchase plan");
+        }
+
+        console.log("Trying to register session here!!!!");
+
+        const sessionData = {
+          customer_id: values.customer_id,
+          plan_id: result.subscription.plan_id,
+          start_time:
+            values.session_type === "custom" && values.custom_start_time
+              ? new Date(
+                  `${new Date().toDateString()} ${values.custom_start_time}`,
+                ).toISOString()
+              : new Date().toISOString(),
+          end_time:
+            values.session_type === "custom" && values.custom_end_time
+              ? new Date(
+                  `${new Date().toDateString()} ${values.custom_end_time}`,
+                ).toISOString()
+              : null,
+          session_length: sessionLength,
+          time_left: result.subscription.time_left,
+          subscription_id: subscriptionId,
+          branch: values.branch || "main",
+        };
+
+        console.log(sessionData);
+
+        const { error } = await supabase.from("sessions").insert(sessionData);
+
+        if (error) {
+          console.log(error);
           throw new Error(result.error || "Failed to purchase plan");
         }
 
@@ -683,31 +719,6 @@ export default function RegisterSessionForm({
                 />
               </div>
             )}
-
-            {/* Branch Selection */}
-            <FormField
-              control={form.control}
-              name="branch"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Branch</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || "main"}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select branch" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="obrero">Obrero</SelectItem>
-                      <SelectItem value="matina">Matina</SelectItem>
-                      {/* Add more branches as needed */}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </>
         )}
 
@@ -752,6 +763,31 @@ export default function RegisterSessionForm({
             )}
           />
         )}
+
+        {/* Branch Selection */}
+        <FormField
+          control={form.control}
+          name="branch"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Branch</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value || undefined}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="obrero">Obrero</SelectItem>
+                  <SelectItem value="matina">Matina</SelectItem>
+                  {/* Add more branches as needed */}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Button
           type="submit"

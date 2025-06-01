@@ -15,8 +15,10 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
+import { PhilippinePesoIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-export const columns: ColumnDef<Customer>[] = [
+export const columns: ColumnDef<Customer & { isInSession: string }>[] = [
   {
     accessorKey: "id",
     header: () => <div className="text-center pr-1.5">ID</div>,
@@ -47,7 +49,13 @@ export const columns: ColumnDef<Customer>[] = [
   },
   {
     accessorKey: "total_spent",
-    header: () => <div className="max-w-[10px]">Total Hours</div>,
+    header: () => <div className="max-w-[10px]">Total Spent</div>,
+    cell: ({ row }) => (
+      <div className="flex flex-row items-center">
+        <PhilippinePesoIcon className="h-4 w-4" />
+        {row.getValue("total_spent")}
+      </div>
+    ),
     maxSize: 40,
   },
   {
@@ -57,26 +65,24 @@ export const columns: ColumnDef<Customer>[] = [
     size: 40,
   },
   {
-    accessorKey: "status",
+    accessorKey: "isInSession",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status");
-
-      if (status === "in session") {
-        return (
-          <div className="bg-green-500 w-[80px] p-1 text-center rounded-md">
-            In Session
-          </div>
-        );
-      } else {
-        return (
-          <div className="bg-gray-200 w-[80px] p-1 text-center rounded-md">
-            Offline
-          </div>
-        );
-      }
+      const isInSession = row.original.isInSession;
+      return (
+        <Badge
+          variant={isInSession ? "default" : "secondary"}
+          className={
+            isInSession
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }
+        >
+          {isInSession ? "In Session" : "Offline"}
+        </Badge>
+      );
     },
-    size: 30,
+    size: 40,
   },
   {
     id: "activity",

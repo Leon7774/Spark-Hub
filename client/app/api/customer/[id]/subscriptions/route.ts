@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { SubscriptionActive } from "@/lib/schemas";
 
 // TODO: Finish this
 export async function GET(

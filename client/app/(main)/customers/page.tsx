@@ -16,12 +16,20 @@ import {
 import { useState } from "react";
 import RegisterCustomerForm from "./register-customer";
 import useSWR from "swr";
+import { useCustomersWithSessions } from "@/hooks/useCustomerWithSessions";
+import TableLoading from "@/components/ui/table-loading";
 
 // TODO: Use swr instead of datacontext
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+// const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Page() {
-  const { customers } = useDataContext();
+  const { customers, isLoading } = useCustomersWithSessions();
+  //
+  // const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  // const { data: customers, isLoading: customersLoading } = useSWR(
+  //   "/api/customer",
+  //   fetcher,
+  // );
   const [open, setOpen] = useState(false);
 
   return (
@@ -49,7 +57,11 @@ export default function Page() {
         </Dialog>
       </div>
 
-      <DataTable columns={columns} data={customers} />
+      {isLoading ? (
+        <TableLoading></TableLoading>
+      ) : (
+        <DataTable columns={columns} data={customers} />
+      )}
     </div>
   );
 }
