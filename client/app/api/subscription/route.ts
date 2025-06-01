@@ -1,58 +1,121 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { validateData, validateSingleData } from "@/app/api/validator";
-import { subscriptionActiveSchema } from "@/lib/schemas";
+import { z } from "zod";
+
+// Define the schema for subscriptions based on your table structure
+const subscriptionSchema = z.object({
+  id: z.number(),
+  created_at: z.string(),
+  customer_id: z.number(),
+  plan_id: z.number(),
+  expiry_date: z.string(),
+  days_left: z.number(),
+  last_login: z.string(),
+  time_left: z.number(),
+  status: z.string(),
+});
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-
-  console.log("Fetching all subscriptions");
-  const { data, error } = await supabase
-    .from("active_subscriptions")
-    .select("*");
-
-  if (error || !data) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Subscriptions not found" },
-      { status: 404 },
-    );
-  }
-
-  const validatedData = validateData(data, subscriptionActiveSchema);
-
-  console.log(validatedData);
-
-  return NextResponse.json(validatedData);
-}
-
-export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  console.log("Trying to create subscription");
-
   try {
-    console.log(request);
-    const body = await request.json();
+    const supabase = await createClient();
+    const searchParams = request.nextUrl.searchParams;
 
-    const validatedData = validateSingleData(body, subscriptionActiveSchema);
+    // Get pagination parameters
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const offset = (page - 1) * limit;
 
-    if (validatedData === null) {
+    // Get filters
+    const status = searchParams.get("status");
+    const customerId = searchParams.get("customerId");
+
+    let query = supabase
+      .from("subscriptions")
+      .select(
+        `
+        id,
+        created_at,
+        customer_id,
+        plan_id,
+        expiry_date,
+        days_left,
+        last_login,
+        time_left,
+        status,
+        customers (
+          first_name,
+          last_name
+        ),
+        subscription_plans (
+          name,
+          plan_type
+        )
+      `,
+        { count: "exact" },
+      )
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    // Apply filters if provided
+    if (status) {
+      query = query.eq("status", status);
+    }
+    if (customerId) {
+      query = query.eq("customer_id", customerId);
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) {
       return NextResponse.json(
-        { error: "Invalid subscription data" },
-        { status: 400 },
+        { error: "Failed to fetch subscriptions" },
+        { status: 500 },
       );
     }
 
+    // // Transform the data to include customer and plan information
+    // const transformedData = data?.map((subscription) => ({
+    //   ...subscription,
+    //   customer_name: subscription.customers
+    //     ? `${subscription.customers.first_name} ${subscription.customers.last_name}`
+    //     : "Unknown",
+    //   plan_name: subscription.subscription_plans?.name || "Unknown",
+    //   plan_type: subscription.subscription_plans?.plan_type || "Unknown",
+    // }));
+
+    return NextResponse.json({
+      data: data,
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching subscriptions:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const body = await request.json();
+
+    // Validate request body
+    const validatedData = subscriptionSchema.partial().parse(body);
+
+    // Insert subscription
     const { data, error } = await supabase
       .from("active_subscriptions")
       .insert(validatedData)
-      .select();
-
-    console.log(data);
+      .select()
+      .single();
 
     if (error) {
-      console.error(error);
       return NextResponse.json(
         { error: "Failed to create subscription" },
         { status: 500 },
@@ -60,10 +123,16 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data, { status: 201 });
-  } catch (err: any) {
-    console.error(err);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request data", details: error.errors },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to create subscription" },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }
