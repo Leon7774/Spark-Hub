@@ -17,6 +17,5 @@
   },
   "homepage": "https://github.com/Leon7774/Spark-Hub#readme",
   "dependencies": {
-    "date-fns": "^4.1.0"
   }
 }

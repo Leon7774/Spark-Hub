@@ -53,7 +53,17 @@ export const columns: ColumnDef<Session>[] = [
         const elapsedMinutes = differenceInMinutes(now, startTime);
         const remainingMinutes = session.plan?.minutes - elapsedMinutes;
 
-        if (remainingMinutes <= 0) return "Expired";
+        if (remainingMinutes <= 0) {
+          const exceedMinutes = elapsedMinutes - session.plan?.minutes;
+          const hours = Math.floor(exceedMinutes / 60);
+          const minutes = exceedMinutes % 60;
+
+          return (
+            <span className="bg-red-500 text-white px-2 py-1 rounded-md">
+              {hours}h {minutes}m exceeded
+            </span>
+          );
+        }
 
         const hours = Math.floor(remainingMinutes / 60);
         const minutes = remainingMinutes % 60;
@@ -67,7 +77,7 @@ export const columns: ColumnDef<Session>[] = [
 
       if (session.plan?.type === "hourly") {
         return (
-          <div className="flex flex-row items-center italic p-2 bg-green-200 rounded-xl gap-2">
+          <div className="flex flex-row w-40 items-center italic p-2 bg-green-200 rounded-xl gap-2">
             <Clock size={15}></Clock>
             Hourly
           </div>

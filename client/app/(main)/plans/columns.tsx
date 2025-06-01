@@ -13,6 +13,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Clock, MapPin } from "lucide-react";
 import { SubscriptionPlan } from "@/lib/schemas";
 import { format, formatISO } from "date-fns";
+import { handleDeactivate } from "./functions";
 
 export const columns: ColumnDef<SubscriptionPlan>[] = [
   {
@@ -196,7 +197,10 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
               <DropdownMenuSeparator />
               {row.original.is_active && (
                 <DropdownMenuItem
-                  onClick={() => handleDeactivate(row)}
+                  onClick={() => {
+                    handleDeactivate(row.original.id);
+                    console.log(row.original);
+                  }}
                   className="text-red-600"
                 >
                   Deactivate
