@@ -58,9 +58,9 @@ export const subscriptionPlanSchema = z.object({
       .string()
       .regex(
         /^([01]\d|2[0-3]):([0-5]\d)$/,
-        "Invalid time format, expected HH:mm",
+        "Invalid time format, expected HH:mm"
       )
-      .nullable(),
+      .nullable()
   ),
   time_valid_end: z.preprocess(
     (val) => {
@@ -75,9 +75,9 @@ export const subscriptionPlanSchema = z.object({
       .string()
       .regex(
         /^([01]\d|2[0-3]):([0-5]\d)$/,
-        "Invalid time format, expected HH:mm",
+        "Invalid time format, expected HH:mm"
       )
-      .nullable(),
+      .nullable()
   ),
   created_at: z
     .preprocess((val) => new Date(val as string), z.date())
@@ -162,13 +162,16 @@ export const sessionSchema = z.object({
   plan_type: z.enum(SubscriptionTypes.options).optional().nullable(),
   subscription: z
     .object({
-      id: z.number(),
-      time_left: z.number().optional(),
-      day_passes: z.number().optional(),
-      expiry_date: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
+      time_left: z.number().optional().nullable(),
+      days_left: z.number().optional().nullable(),
+      expiry_date: z
+        .preprocess((val) => new Date(val as string), z.date())
+        .nullable()
+        .optional(), // or z.date() if it's ISO format already parsed
     })
     .optional()
     .nullable(),
+  subscription_id: z.number().optional(),
 });
 
 /* ───────────────────────────────

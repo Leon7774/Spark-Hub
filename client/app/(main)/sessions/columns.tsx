@@ -17,12 +17,14 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { Session } from "@/lib/schemas";
 import { differenceInDays, differenceInMinutes, format } from "date-fns";
-import { sessionLogout } from "@/app/(main)/sessions/functions";
+import { logoutBundle, sessionLogout } from "@/app/(main)/sessions/functions";
 import { useState } from "react";
 import ConfirmLogoutDialog from "./confirm-logout";
+import BundleLogoutDialog from "./bundle-logout-dialog";
 
 function ActionsCell({ session }: { session: Session }) {
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showHourlyDialog, setHourlyDialog] = useState(false);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
 
   return (
     <>
@@ -48,9 +50,9 @@ function ActionsCell({ session }: { session: Session }) {
           <DropdownMenuItem
             onClick={() => {
               if (session.plan?.type === "hourly") {
-                setShowConfirmDialog(true);
-              } else {
-                sessionLogout(session);
+                setHourlyDialog(true);
+              } else if (session.plan?.type === "bundle") {
+                setShowPlanDialog(true);
               }
             }}
           >
@@ -61,11 +63,20 @@ function ActionsCell({ session }: { session: Session }) {
 
       <ConfirmLogoutDialog
         session={session}
-        isOpen={showConfirmDialog}
-        onClose={() => setShowConfirmDialog(false)}
+        isOpen={showHourlyDialog}
+        onClose={() => setHourlyDialog(false)}
         onConfirm={() => {
           sessionLogout(session);
-          setShowConfirmDialog(false);
+          setHourlyDialog(false);
+        }}
+      />
+      <BundleLogoutDialog
+        session={session}
+        isOpen={showPlanDialog}
+        onClose={() => setShowPlanDialog(false)}
+        onConfirm={() => {
+          logoutBundle(session);
+          setShowPlanDialog(false);
         }}
       />
     </>

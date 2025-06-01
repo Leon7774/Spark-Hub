@@ -1,7 +1,14 @@
 import { toast } from "sonner";
 import { mutate } from "swr";
+import {
+  differenceInMinutes,
+  differenceInDays,
+  isBefore,
+  isToday,
+} from "date-fns";
 import { Session } from "@/lib/schemas";
-import { differenceInMinutes } from "date-fns";
+import { createClient } from "@/utils/supabase/client";
+import { log } from "console";
 
 export async function getCustomerById(id: number) {
   const res = await fetch(`/api/customers/${id}`);
@@ -48,7 +55,7 @@ export async function sessionLogout(session: Session) {
 
   if (session.plan_type === "bundle" && session.plan?.minutes) {
     const subscription = await fetch(
-      `/api/subscription/${session.subscription?.id}`,
+      `/api/subscription/${session.subscription_id}`,
       {
         method: "POST",
         headers: {
@@ -57,10 +64,10 @@ export async function sessionLogout(session: Session) {
         body: JSON.stringify({
           length: differenceInMinutes(
             session.start_time,
-            session.end_time || 0,
+            session.end_time || 0
           ),
         }),
-      },
+      }
     );
     if (subscription.ok) {
     }
@@ -78,4 +85,73 @@ export async function sessionLogout(session: Session) {
   }
   toast.success("Session logged out successfully");
   await mutate("/api/session");
+}
+
+export async function logoutBundle(session: Session) {
+  const supabase = await createClient();
+
+  let isDaysPlan = false;
+  let isMinutesPlan = false;
+
+  if (session.subscription?.days_left !== null) {
+    isDaysPlan = true;
+  } else if (session.subscription?.time_left !== null) {
+    isMinutesPlan = true;
+  }
+
+  if (!session.subscription_id) {
+    throw new Error("Subscription ID is missing");
+  }
+
+  supabase.from("subscriptions").select("*").eq("id", session.subscription?.id);
+
+  const { data: subscription, error } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("id", session.subscription_id)
+    .single();
+
+  console.log(error);
+
+  if (error || !subscription) throw new Error("Subscription not found");
+
+  const start = new Date(session.start_time);
+  const end = new Date(session.end_time || new Date());
+
+  let updates: any = {};
+  let expired = false;
+
+  if (isMinutesPlan) {
+    const usedMinutes = differenceInMinutes(end, start);
+    const newTimeLeft = subscription.time_left - usedMinutes;
+
+    updates.time_left = newTimeLeft;
+    if (newTimeLeft < 0) expired = true;
+  }
+
+  if (isDaysPlan) {
+    const usedDays = Math.max(1, differenceInDays(end, start)); // use at least 1 day
+    const newDaysLeft = subscription.days_left - usedDays;
+
+    updates.days_left = newDaysLeft;
+    if (newDaysLeft < 0) expired = true;
+  }
+
+  const expiryDate = new Date(subscription.expiry_date);
+  if (isToday(expiryDate) || isBefore(expiryDate, new Date())) {
+    expired = true;
+  }
+
+  if (expired) {
+    updates.status = "expired";
+  }
+
+  const { error: updateError } = await supabase
+    .from("subscriptions")
+    .update(updates)
+    .eq("id", subscription.id);
+
+  if (updateError) {
+    throw new Error("Failed to update subscription");
+  }
 }

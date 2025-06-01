@@ -18,12 +18,15 @@ import RegisterCustomerForm from "./register-customer";
 import useSWR from "swr";
 import { useCustomersWithSessions } from "@/hooks/useCustomerWithSessions";
 import TableLoading from "@/components/ui/table-loading";
+import { log } from "console";
 
 // TODO: Use swr instead of datacontext
 // const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Page() {
   const { customers, isLoading } = useCustomersWithSessions();
+
+  console.log(customers);
   //
   // const fetcher = (url: string) => fetch(url).then((res) => res.json());
   // const { data: customers, isLoading: customersLoading } = useSWR(

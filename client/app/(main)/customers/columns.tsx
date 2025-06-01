@@ -47,23 +47,24 @@ export const columns: ColumnDef<Customer & { isInSession: string }>[] = [
       return <div>{formatted}</div>;
     },
   },
-  {
-    accessorKey: "total_spent",
-    header: () => <div className="max-w-[10px]">Total Spent</div>,
-    cell: ({ row }) => (
-      <div className="flex flex-row items-center">
-        <PhilippinePesoIcon className="h-4 w-4" />
-        {row.getValue("total_spent")}
-      </div>
-    ),
-    maxSize: 40,
-  },
-  {
-    accessorKey: "total_hours",
-    header: () => <div className="max-w-[10px]">Total Hours</div>,
-    cell: ({ row }) => <div className="">{row.getValue("total_hours")}</div>,
-    size: 40,
-  },
+  // TODO: Implement this
+  // {
+  //   accessorKey: "total_spent",
+  //   header: () => <div className="max-w-[10px]">Total Spent</div>,
+  //   cell: ({ row }) => (
+  //     <div className="flex flex-row items-center">
+  //       <PhilippinePesoIcon className="h-4 w-4" />
+  //       {row.getValue("total_spent")}
+  //     </div>
+  //   ),
+  //   maxSize: 40,
+  // },
+  // {
+  //   accessorKey: "total_hours",
+  //   header: () => <div className="max-w-[10px]">Total Hours</div>,
+  //   cell: ({ row }) => <div className="">{row.getValue("total_hours")}</div>,
+  //   size: 40,
+  // },
   {
     accessorKey: "isInSession",
     header: "Status",

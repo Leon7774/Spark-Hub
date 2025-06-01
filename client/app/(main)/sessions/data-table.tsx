@@ -41,7 +41,7 @@ import useSWR from "swr";
 export const SessionsTable = () => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
+    []
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -53,13 +53,17 @@ export const SessionsTable = () => {
   const { data: rawSessionData, isLoading } = useSWR("/api/session", fetcher);
   const { data: customersData } = useSWR("/api/customer", fetcher);
   const { data: plansData } = useSWR("/api/plan", fetcher);
+  const { data: subsriptionData } = useSWR("api/subscription", fetcher);
 
   useEffect(() => {
     if (rawSessionData && customersData && plansData) {
       setData(
-        enrichSessions(rawSessionData, customersData, plansData).filter(
-          (s) => !s.end_time,
-        ),
+        enrichSessions(
+          rawSessionData,
+          customersData,
+          plansData,
+          subsriptionData
+        ).filter((s) => !s.end_time)
       );
     }
   }, [rawSessionData, customersData, plansData]);
@@ -105,11 +109,11 @@ export const SessionsTable = () => {
   });
 
   const obreroSessions = ongoingSessions.filter((s: Session) =>
-    s.branch?.toLowerCase().includes("obrero"),
+    s.branch?.toLowerCase().includes("obrero")
   ).length;
 
   const matinaSessions = ongoingSessions.filter((s: Session) =>
-    s.branch?.toLowerCase().includes("matina"),
+    s.branch?.toLowerCase().includes("matina")
   ).length;
 
   const clearFilters = () => {
@@ -274,7 +278,7 @@ export const SessionsTable = () => {
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -306,7 +310,7 @@ export const SessionsTable = () => {
                     <TableCell key={cell.id} className="py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}
