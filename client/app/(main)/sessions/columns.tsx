@@ -187,7 +187,7 @@ export const columns: ColumnDef<Session>[] = [
   },
 
   {
-    id: "actions",
+    id: "activity",
     enableHiding: false,
     cell: ({ row }) => <ActionsCell session={row.original} />,
   },

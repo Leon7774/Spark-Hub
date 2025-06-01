@@ -15,71 +15,33 @@ import {
 import BaseTable from "@/components/ui/base-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { format } from "date-fns";
+import useSWR from "swr";
+import { z } from "zod";
 
-interface ActionLog {
-  id: string;
-  user_id: string;
-  action_type: string;
-  description: string;
-  metadata: Record<string, any>;
-  created_at: string;
-  user: {
-    email: string;
-  } | null;
+// Export the schema so it can be used for runtime validation elsewhere
+export const activityLogSchema = z.object({
+  id: z.number(),
+  created_at: z.string().datetime(),
+  description: z.string(),
+  action: z.string(),
+  email: z.string().email(),
+  total: z.number().int(),
+});
+
+// Type inference from the schema
+export type ActivityLog = z.infer<typeof activityLogSchema>;
+
+interface ActivityLogResponse {
+  data: ActivityLog[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
 }
 
-// Sample data for the activity activity_log
-const sampleActionLogs: ActionLog[] = [
-  {
-    id: "1",
-    user_id: "user1",
-    action_type: "LOGIN",
-    description: "User logged in",
-    metadata: { ip: "192.168.1.1", browser: "Chrome" },
-    created_at: new Date().toISOString(),
-    user: { email: "john@example.com" },
-  },
-  {
-    id: "2",
-    user_id: "user2",
-    action_type: "CREATE_SESSION",
-    description: "Created new session",
-    metadata: { customer: "Jane Smith", duration: "60min" },
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    user: { email: "sarah@example.com" },
-  },
-  {
-    id: "3",
-    user_id: "user1",
-    action_type: "UPDATE_PROFILE",
-    description: "Updated user profile",
-    metadata: { field: "name", old: "John", new: "Johnny" },
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-    user: { email: "john@example.com" },
-  },
-  {
-    id: "4",
-    user_id: "user3",
-    action_type: "DELETE_SESSION",
-    description: "Deleted session",
-    metadata: { session_id: "sess_123", reason: "cancelled" },
-    created_at: new Date(Date.now() - 10800000).toISOString(),
-    user: { email: "mike@example.com" },
-  },
-  {
-    id: "5",
-    user_id: "user2",
-    action_type: "ADD_NOTE",
-    description: "Added session notes",
-    metadata: { session_id: "sess_456", note_length: "150 chars" },
-    created_at: new Date(Date.now() - 14400000).toISOString(),
-    user: { email: "sarah@example.com" },
-  },
-];
-
-const columns: ColumnDef<ActionLog>[] = [
+const columns: ColumnDef<ActivityLog>[] = [
   {
     accessorKey: "created_at",
     header: "Timestamp",
@@ -90,16 +52,16 @@ const columns: ColumnDef<ActionLog>[] = [
     ),
   },
   {
-    accessorKey: "user.email",
+    accessorKey: "email",
     header: "User",
-    cell: ({ row }) => <div>{row.original.user?.email || "Unknown"}</div>,
+    cell: ({ row }) => <div>{row.original.email || "Unknown"}</div>,
   },
   {
-    accessorKey: "action_type",
+    accessorKey: "action",
     header: "Action",
     cell: ({ row }) => (
       <div className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
-        {row.original.action_type}
+        {row.original.action}
       </div>
     ),
   },
@@ -109,15 +71,10 @@ const columns: ColumnDef<ActionLog>[] = [
     cell: ({ row }) => <div>{row.original.description}</div>,
   },
   {
-    accessorKey: "metadata",
-    header: "Details",
+    accessorKey: "total",
+    header: "Total",
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
-        {Object.entries(row.original.metadata || {})
-          .filter(([key]) => key !== "timestamp")
-          .map(([key, value]) => `${key}: ${value}`)
-          .join(", ")}
-      </div>
+      <div className="text-sm text-muted-foreground">{row.original.total}</div>
     ),
   },
 ];
@@ -128,17 +85,26 @@ export function ActionLogsTable() {
     [],
   );
   const [rowSelection, setRowSelection] = React.useState({});
+  const [page, setPage] = React.useState(1);
+  const [limit] = React.useState(10);
+
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+  const { data, error, isLoading } = useSWR<ActivityLogResponse>(
+    `/api/log/activity?page=${page}&limit=${limit}`,
+    fetcher,
+  );
 
   const table = useReactTable({
+    data: data?.data || [],
     columns,
-    data: sampleActionLogs,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
@@ -146,54 +112,63 @@ export function ActionLogsTable() {
     },
   });
 
+  if (error) return <div>Failed to load activity logs</div>;
+  if (isLoading) return <div>Loading...</div>;
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between pb-4">
         <div className="flex items-center gap-2">
           <Input
-            placeholder="Filter by user..."
-            value={
-              (table.getColumn("user.email")?.getFilterValue() as string) ?? ""
-            }
+            placeholder="Filter by email..."
+            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("user.email")?.setFilterValue(event.target.value)
+              table.getColumn("email")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
           <Input
             placeholder="Filter by action..."
             value={
-              (table.getColumn("action_type")?.getFilterValue() as string) ?? ""
+              (table.getColumn("action")?.getFilterValue() as string) ?? ""
             }
             onChange={(event) =>
-              table.getColumn("action_type")?.setFilterValue(event.target.value)
+              table.getColumn("action")?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
         </div>
       </div>
       <div className="rounded-md border">
-        <BaseTable<ActionLog> table={table} padding={4} />
+        <BaseTable table={table} padding={4} />
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="text-muted-foreground text-sm">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {table.getPageCount()}
+          Page {data?.pagination.page} of{" "}
+          {Math.ceil(
+            (data?.pagination.total || 0) / (data?.pagination.limit || limit),
+          )}
         </div>
         <div className="space-x-2">
           <Button
             variant="default"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
           >
             Previous
           </Button>
           <Button
             variant="default"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => setPage(page + 1)}
+            disabled={
+              !data ||
+              page >=
+                Math.ceil(
+                  data.pagination.total / (data.pagination.limit || limit),
+                )
+            }
           >
             Next
           </Button>

@@ -107,6 +107,15 @@ export const subscriptionActiveSchema = z.object({
     .optional(),
 });
 
+export const activityLogSchema = z.object({
+  id: z.number(), // bigint
+  created_at: z.string().datetime(), // timestamp with time zone
+  description: z.string(), // text
+  action: z.string(), // text
+  email: z.string().email(), // text with email validation
+  total: z.number().int(), // integer
+});
+
 export const transactionSchema = z.object({
   id: z.number(),
   plan_id: z.number(),
@@ -171,3 +180,4 @@ export type SubscriptionActive = z.infer<typeof subscriptionActiveSchema>;
 export type Transaction = z.infer<typeof transactionSchema>;
 export type Log = z.infer<typeof logSchema>;
 export type Session = z.infer<typeof sessionSchema>;
+export type ActivityLog = z.infer<typeof activityLogSchema>;

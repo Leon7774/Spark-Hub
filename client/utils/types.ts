@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 
 export const SubscriptionTypes = ["bundle", "straight", "hourly"] as [
   string,
-  ...string[]
+  ...string[],
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -48,7 +48,7 @@ export type SubscriptionActive = [
   // The day the plan expires (current date + length from)
   expiry: Date,
   // The hours left for a plan
-  timeLeft: number
+  timeLeft: number,
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -62,13 +62,13 @@ export type Transaction = [
   total: number,
   date: Date,
   branch: string,
-  staff: number
+  staff: number,
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type Log = [id: number, action: Action];
 
-// TODO Add actions as program completes
+// TODO Add activity as program completes
 export const Action = [
   "login",
   "logout",

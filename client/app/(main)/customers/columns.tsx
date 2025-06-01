@@ -79,7 +79,7 @@ export const columns: ColumnDef<Customer>[] = [
     size: 30,
   },
   {
-    id: "actions",
+    id: "activity",
     cell: ({ row }) => {
       return (
         <div className="text-right">

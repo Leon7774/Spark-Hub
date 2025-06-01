@@ -176,7 +176,7 @@ export const columns: ColumnDef<SubscriptionPlan>[] = [
     },
   },
   {
-    id: "actions",
+    id: "activity",
     cell: ({ row }) => {
       return (
         <div className="text-right">
