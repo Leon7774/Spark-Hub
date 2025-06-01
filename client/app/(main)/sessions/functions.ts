@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { mutate } from "swr";
+import { Session } from "@/lib/schemas";
 
 export async function getCustomerById(id: number) {
   const res = await fetch(`/api/customers/${id}`);
@@ -41,7 +42,24 @@ export async function getPlanById(id: number) {
  * @throws error throw an error if the session logout fails.
  */
 
-export async function sessionLogout(id: number) {
+export async function sessionLogout(session: Session) {
+  if (session.plan_type === "bundle") {
+    const subscription = await fetch(
+      `/api/subscription/${session.subscription?.id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          delete: true,
+        }),
+      },
+    );
+    if (subscription.ok) {
+    }
+  }
+
   const res = await fetch(`api/session/${id}/logout`, {
     method: "POST",
     headers: {

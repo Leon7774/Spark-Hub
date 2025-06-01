@@ -162,6 +162,7 @@ export const sessionSchema = z.object({
   plan_type: z.enum(SubscriptionTypes.options).optional().nullable(),
   subscription: z
     .object({
+      id: z.number(),
       time_left: z.number().optional(),
       day_passes: z.number().optional(),
       expiry_date: z.preprocess((val) => new Date(val as string), z.date()), // or z.date() if it's ISO format already parsed
