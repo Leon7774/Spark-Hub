@@ -77,6 +77,12 @@ export const columns: ColumnDef<Session>[] = [
         ? `${customer.first_name} ${customer.last_name}`
         : "Unknown";
     },
+    filterFn: (row, columnId, filterValue) => {
+      const customer = row.original.customer;
+      const fullName =
+        `${customer?.first_name ?? ""} ${customer?.last_name ?? ""}`.toLowerCase();
+      return fullName.includes(filterValue.toLowerCase());
+    },
   },
   {
     accessorKey: "plan",

@@ -202,6 +202,7 @@ export default function BundleSubscriptionForm({
         );
       }
 
+      mutate("/api/subscription");
       toast.success(
         `Successfully subscribed ${selectedCustomer?.first_name} ${selectedCustomer?.last_name} to ${selectedPlan.name} bundle!`,
       );

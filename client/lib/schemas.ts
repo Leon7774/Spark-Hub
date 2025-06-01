@@ -100,7 +100,6 @@ export const subscriptionActiveSchema = z.object({
   days_left: z.number().nullable().optional(),
   customer: z
     .object({
-      id: z.number(),
       first_name: z.string(),
       last_name: z.string(),
     })

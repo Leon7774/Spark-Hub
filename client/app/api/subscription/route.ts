@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     // Insert subscription
     const { data, error } = await supabase
-      .from("active_subscriptions")
+      .from("subscriptions")
       .insert(validatedData)
       .select()
       .single();

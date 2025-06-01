@@ -22,7 +22,7 @@ const Subscriptions = () => {
   let enrichedData: SubscriptionActive[] = [];
 
   if (!isLoading && !customersLoading && !plansLoading) {
-    enrichedData = enrichSubscriptions(data, customers, plans);
+    enrichedData = enrichSubscriptions(data.data, customers, plans);
   }
 
   return (
