@@ -80,7 +80,7 @@ export default function BundleSubscriptionForm({
   const [isLoading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null,
+    null
   );
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -134,7 +134,7 @@ export default function BundleSubscriptionForm({
   const filteredCustomers = customers.filter((customer) =>
     `${customer.first_name} ${customer.last_name}`
       .toLowerCase()
-      .includes(searchQuery.toLowerCase()),
+      .includes(searchQuery.toLowerCase())
   );
 
   async function onSubmit() {
@@ -147,7 +147,7 @@ export default function BundleSubscriptionForm({
       const supabase = createClient();
 
       const selectedPlan = bundlePlans.find(
-        (plan) => plan.id === values.plan_id,
+        (plan) => plan.id === values.plan_id
       );
 
       if (!selectedPlan) {
@@ -171,7 +171,7 @@ export default function BundleSubscriptionForm({
 
       if (existingSubscription) {
         toast.error(
-          "Customer already has an active subscription for this bundle plan.",
+          "Customer already has an active subscription for this bundle plan."
         );
         setLoading(false);
         setShowDialog(false);
@@ -192,7 +192,6 @@ export default function BundleSubscriptionForm({
       }
 
       // Create new bundle subscription
-
       const response = await fetch("/api/subscription", {
         method: "POST",
         headers: {
@@ -204,13 +203,15 @@ export default function BundleSubscriptionForm({
       if (!response.ok) {
         const responseData = await response.json();
         throw new Error(
-          `HTTP error! status: ${response.status} ${JSON.stringify(responseData)}`,
+          `HTTP error! status: ${response.status} ${JSON.stringify(
+            responseData
+          )}`
         );
       }
 
       mutate("/api/subscription");
       toast.success(
-        `Successfully subscribed ${selectedCustomer?.first_name} ${selectedCustomer?.last_name} to ${selectedPlan.name} bundle!`,
+        `Successfully subscribed ${selectedCustomer?.first_name} ${selectedCustomer?.last_name} to ${selectedPlan.name} bundle!`
       );
 
       dialogOpenSet(false);

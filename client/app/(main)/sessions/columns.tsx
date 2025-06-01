@@ -1,4 +1,9 @@
-import { Clock, MoreHorizontal } from "lucide-react";
+import {
+  CalendarDays,
+  Clock,
+  HourglassIcon,
+  MoreHorizontal,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -79,8 +84,9 @@ export const columns: ColumnDef<Session>[] = [
     },
     filterFn: (row, columnId, filterValue) => {
       const customer = row.original.customer;
-      const fullName =
-        `${customer?.first_name ?? ""} ${customer?.last_name ?? ""}`.toLowerCase();
+      const fullName = `${customer?.first_name ?? ""} ${
+        customer?.last_name ?? ""
+      }`.toLowerCase();
       return fullName.includes(filterValue.toLowerCase());
     },
   },
@@ -127,11 +133,21 @@ export const columns: ColumnDef<Session>[] = [
         const hours = Math.floor(remainingMinutes / 60);
         const minutes = remainingMinutes % 60;
 
-        return `${hours}h ${minutes}m`;
+        return (
+          <div className="flex flex-row w-40 items-center italic p-2 bg-blue-200 rounded-xl gap-2">
+            <HourglassIcon size={15}></HourglassIcon>
+            {hours}h {minutes}m
+          </div>
+        );
       }
 
       if (session.plan?.day_passes) {
-        return `${session.subscription?.day_passes} day passes`;
+        return (
+          <div className="flex flex-row w-40 items-center italic p-2 bg-rose-200 rounded-xl gap-2">
+            <CalendarDays size={15}></CalendarDays>
+            {session.plan?.day_passes} day passes left
+          </div>
+        );
       }
 
       if (session.plan?.type === "hourly") {

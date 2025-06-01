@@ -5,7 +5,7 @@ import { SubscriptionActive } from "@/lib/schemas";
 // TODO: Finish this
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const supabase = await createClient();
   const id = await params.id;
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (!customer_id || !plan_id) {
       return NextResponse.json(
         { error: "Customer ID and Plan ID are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       console.log(planError);
       return NextResponse.json(
         { error: "Plan not found or not a valid bundle plan" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     if (customerError || !customer) {
       return NextResponse.json(
         { error: "Customer not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       console.error("Subscription creation error:", subscriptionError);
       return NextResponse.json(
         { error: "Failed to create subscription" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       .update({
         total_spent: (customer.total_spent || 0) + plan.price,
       })
-      .eq("id", customer_id);
+      .eq("id", body.customer_id);
 
     if (customerUpdateError) {
       console.error("Customer update error:", customerUpdateError);
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     console.error("API Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

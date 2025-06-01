@@ -55,28 +55,28 @@ export const RouteSelect = () => {
               <RouteButton
                 route="/logs/activity_log"
                 routeText="Activity History"
-                className="w-35 h-8 text-xs"
+                className="w-full h-8 text-xs"
               ></RouteButton>
             </CollapsibleContent>
             <CollapsibleContent>
               <RouteButton
                 route="/logs/session_log"
                 routeText="Session History"
-                className="w-35 h-8 text-xs"
+                className="w-full h-8 text-xs"
               ></RouteButton>
             </CollapsibleContent>
             <CollapsibleContent>
               <RouteButton
                 route="/logs/expired_subscriptions"
                 routeText="Expired Subscriptions"
-                className="w-35 h-8 text-xs"
+                className="w-full h-8 text-xs"
               ></RouteButton>
             </CollapsibleContent>
             <CollapsibleContent>
               <RouteButton
                 route="/logs/financial_log"
                 routeText="Financial Log"
-                className="w-35 h-8 text-xs"
+                className="w-full h-8 text-xs"
               ></RouteButton>
             </CollapsibleContent>
           </div>

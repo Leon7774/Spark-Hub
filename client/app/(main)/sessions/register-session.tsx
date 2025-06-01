@@ -96,7 +96,7 @@ export default function RegisterSessionForm({
   const [registrationType, setRegistrationType] = useState<string>("session");
   const [sessionType, setSessionType] = useState<string | undefined>(undefined);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null,
+    null
   );
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -143,8 +143,8 @@ export default function RegisterSessionForm({
       // Filter for bundle plans only for subscriptions
       setBundlePlans(
         plansData.filter(
-          (plan) => plan.is_active && plan.plan_type === "bundle",
-        ),
+          (plan) => plan.is_active && plan.plan_type === "bundle"
+        )
       );
     }
   }, [plansData]);
@@ -159,7 +159,7 @@ export default function RegisterSessionForm({
   useEffect(() => {
     if (selectedCustomer && subscriptions.length > 0) {
       const customerSubs = subscriptions.filter(
-        (sub) => sub.customer_id === selectedCustomer.id,
+        (sub) => sub.customer_id === selectedCustomer.id
       );
       setCustomerSubscriptions(customerSubs);
     } else {
@@ -174,28 +174,28 @@ export default function RegisterSessionForm({
     switch (sessionType) {
       case "straight":
         return allPlans.filter(
-          (plan) => plan.is_active && plan.plan_type === "straight",
+          (plan) => plan.is_active && plan.plan_type === "straight"
         );
       case "hourly":
         return allPlans.filter(
-          (plan) => plan.is_active && plan.plan_type === "hourly",
+          (plan) => plan.is_active && plan.plan_type === "hourly"
         );
       case "timed":
         return allPlans.filter(
-          (plan) => plan.is_active && plan.plan_type === "timed",
+          (plan) => plan.is_active && plan.plan_type === "timed"
         );
       case "subscription":
         // Return plans that the customer is subscribed to
         if (customerSubscriptions.length === 0) return [];
         const subscribedPlanIds = customerSubscriptions.map(
-          (sub) => sub.plan_id,
+          (sub) => sub.plan_id
         );
         return allPlans
           .filter((plan) => subscribedPlanIds.includes(plan.id))
           .map((plan) => ({
             ...plan,
             expiry_length: customerSubscriptions.find(
-              (sub) => sub.plan_id === plan.id,
+              (sub) => sub.plan_id === plan.id
             )?.expiry_duration,
           }));
       default:
@@ -224,12 +224,12 @@ export default function RegisterSessionForm({
   const filteredCustomers = customers.filter((customer) =>
     `${customer.first_name} ${customer.last_name}`
       .toLowerCase()
-      .includes(searchQuery.toLowerCase()),
+      .includes(searchQuery.toLowerCase())
   );
 
   // Calculate session length and time left based on plan and session type
   const calculateSessionData = (
-    values: z.infer<typeof registrationFormSchema>,
+    values: z.infer<typeof registrationFormSchema>
   ) => {
     let sessionLength = 0;
     let timeLeft = 0;
@@ -243,7 +243,7 @@ export default function RegisterSessionForm({
         if (values.session_type === "subscription") {
           // For subscription sessions, use remaining time from customer's subscription
           const customerSub = customerSubscriptions.find(
-            (sub) => sub.plan_id === values.plan_id,
+            (sub) => sub.plan_id === values.plan_id
           );
           timeLeft = customerSub?.time_left || 0;
           sessionLength = selectedPlan.time_included || 0;
@@ -267,23 +267,23 @@ export default function RegisterSessionForm({
 
     console.log("Trying to register");
 
-    const { sessionLength, timeLeft } = calculateSessionData(values);
-
-    // Find subscription_id if it's a subscription session
-    let subscriptionId = null;
-    if (values.session_type === "subscription" && values.plan_id) {
-      const customerSub = customerSubscriptions.find(
-        (sub) => sub.plan_id === values.plan_id,
-      );
-      subscriptionId = customerSub?.id || null;
-    }
-
     try {
       const supabase = await createClient();
 
       if (values.registration_type === "session") {
-        // Handle session registration
-        console.log("Trying to register session here!!!!");
+        // Handle session registration - using existing subscription or plan
+        console.log("Registering session with existing plan/subscription");
+
+        const { sessionLength, timeLeft } = calculateSessionData(values);
+
+        // Find subscription_id if it's a subscription session
+        let subscriptionId = null;
+        if (values.session_type === "subscription" && values.plan_id) {
+          const customerSub = customerSubscriptions.find(
+            (sub) => sub.plan_id === values.plan_id
+          );
+          subscriptionId = customerSub?.id || null;
+        }
 
         const sessionData = {
           customer_id: values.customer_id,
@@ -291,13 +291,13 @@ export default function RegisterSessionForm({
           start_time:
             values.session_type === "custom" && values.custom_start_time
               ? new Date(
-                  `${new Date().toDateString()} ${values.custom_start_time}`,
+                  `${new Date().toDateString()} ${values.custom_start_time}`
                 ).toISOString()
               : new Date().toISOString(),
           end_time:
             values.session_type === "custom" && values.custom_end_time
               ? new Date(
-                  `${new Date().toDateString()} ${values.custom_end_time}`,
+                  `${new Date().toDateString()} ${values.custom_end_time}`
                 ).toISOString()
               : null,
           session_length: sessionLength,
@@ -309,32 +309,15 @@ export default function RegisterSessionForm({
         const { error } = await supabase.from("sessions").insert(sessionData);
         if (error) throw error;
 
-        // // If it's a subscription session, update the subscription's remaining time
-        // if (values.session_type === "subscription" && subscriptionId) {
-        //   const customerSub = customerSubscriptions.find(
-        //     (sub) => sub.plan_id === values.plan_id,
-        //   );
-        //   if (customerSub) {
-        //     const newTimeLeft = Math.max(
-        //       0,
-        //       (customerSub.time_left || 0) - sessionLength,
-        //     );
-        //     await supabase
-        //       .from("subscriptions")
-        //       .update({ time_left: newTimeLeft })
-        //       .eq("id", subscriptionId);
-        //   }
-        // }
-
         mutate("/api/subscription");
         mutate("/api/customer");
         mutate("/api/session");
         toast.success("Session registered successfully");
       } else if (values.registration_type === "plan_purchase") {
-        /*
-        PLAN PURCHASE
-         */
-        // Handle plan purchase using API
+        // Handle plan purchase - creates new subscription AND starts session
+        console.log("Purchasing plan and creating subscription");
+
+        // First, purchase the plan (creates subscription)
         const response = await fetch(
           `/api/customer/${form.getValues().customer_id}/subscriptions`,
           {
@@ -346,49 +329,51 @@ export default function RegisterSessionForm({
               customer_id: values.customer_id,
               plan_id: values.purchase_plan_id,
             }),
-          },
+          }
         );
 
         const result = await response.json();
 
         if (!response.ok) {
-          console.log(result.error.message);
+          console.log(result.error?.message);
           throw new Error(result.error || "Failed to purchase plan");
         }
 
-        console.log("Trying to register session here!!!!");
+        console.log(
+          "Plan purchased, now creating session from new subscription"
+        );
 
+        // Get the purchased plan details for session calculation
+        const purchasedPlan = bundlePlans.find(
+          (plan) => plan.id === values.purchase_plan_id
+        );
+
+        if (!purchasedPlan) {
+          throw new Error("Purchased plan not found");
+        }
+
+        // Create session using the newly created subscription
         const sessionData = {
           customer_id: values.customer_id,
           plan_id: result.subscription.plan_id,
-          start_time:
-            values.session_type === "custom" && values.custom_start_time
-              ? new Date(
-                  `${new Date().toDateString()} ${values.custom_start_time}`,
-                ).toISOString()
-              : new Date().toISOString(),
-          end_time:
-            values.session_type === "custom" && values.custom_end_time
-              ? new Date(
-                  `${new Date().toDateString()} ${values.custom_end_time}`,
-                ).toISOString()
-              : null,
-          session_length: sessionLength,
+          start_time: new Date().toISOString(), // Start immediately for purchased plans
+          end_time: null, // No end time for bundle plans
+          session_length: purchasedPlan.time_included || 0,
           time_left: result.subscription.time_left,
-          subscription_id: subscriptionId,
+          subscription_id: result.subscription.id,
           branch: values.branch || "main",
         };
 
-        console.log(sessionData);
+        console.log("Creating session with data:", sessionData);
 
         const { error } = await supabase.from("sessions").insert(sessionData);
 
         if (error) {
-          console.log(error);
-          throw new Error(result.error || "Failed to purchase plan");
+          console.log("Session creation error:", error);
+          throw new Error("Failed to create session after plan purchase");
         }
 
-        toast.success(result.message || "Plan purchased successfully");
+        toast.success(`${result.message} and session started`);
 
         // Mutate SWR data to refresh
         mutate("/api/subscription");
@@ -403,11 +388,11 @@ export default function RegisterSessionForm({
       setSessionType(undefined);
       setRegistrationType("session");
     } catch (error) {
-      console.error("Error processing registration:", error.message);
+      console.error("Error processing registration:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to process registration",
+          : "Failed to process registration"
       );
     } finally {
       setLoading(false);
@@ -420,9 +405,9 @@ export default function RegisterSessionForm({
       return "Are you sure you want to register this session? This action cannot be undone.";
     } else {
       const selectedPlan = bundlePlans.find(
-        (plan) => plan.id === values.purchase_plan_id,
+        (plan) => plan.id === values.purchase_plan_id
       );
-      return `Are you sure you want to purchase the ${selectedPlan?.name} plan for ₱${selectedPlan?.price}? This will charge the customer and activate their subscription.`;
+      return `Are you sure you want to purchase the ${selectedPlan?.name} plan for ₱${selectedPlan?.price}? This will charge the customer, activate their subscription, and start a session.`;
     }
   };
 
@@ -610,7 +595,7 @@ export default function RegisterSessionForm({
                                   (() => {
                                     const subscription =
                                       customerSubscriptions.find(
-                                        (sub) => sub.plan_id === plan.id,
+                                        (sub) => sub.plan_id === plan.id
                                       );
                                     return subscription ? (
                                       <>
@@ -808,8 +793,8 @@ export default function RegisterSessionForm({
               ? "Registering..."
               : "Processing..."
             : registrationType === "session"
-              ? "Register Session"
-              : "Purchase Plan"}
+            ? "Register Session"
+            : "Purchase Plan & Start Session"}
         </Button>
       </form>
 

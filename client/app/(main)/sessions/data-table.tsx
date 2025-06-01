@@ -61,8 +61,6 @@ export const SessionsTable = () => {
           (s) => !s.end_time,
         ),
       );
-      // console.log(rawSessionData);
-      // console.log("All data ready!");
     }
   }, [rawSessionData, customersData, plansData]);
 
