@@ -126,11 +126,18 @@ export const columns: ColumnDef<Session>[] = [
       const now = new Date();
 
       if (session.plan?.minutes) {
-        const elapsedMinutes = differenceInMinutes(now, startTime);
-        const remainingMinutes = session.plan?.minutes - elapsedMinutes;
+        const sessionLength = differenceInMinutes(now, startTime);
+
+        let remainingMinutes: number;
+
+        if (session.subscription && session.subscription.time_left != null) {
+          remainingMinutes = session.subscription.time_left - sessionLength;
+        } else {
+          remainingMinutes = session.plan?.minutes - sessionLength;
+        }
 
         if (remainingMinutes <= 0) {
-          const exceedMinutes = elapsedMinutes - session.plan?.minutes;
+          const exceedMinutes = sessionLength - session.plan?.minutes;
           const hours = Math.floor(exceedMinutes / 60);
           const minutes = exceedMinutes % 60;
 

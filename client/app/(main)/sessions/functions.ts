@@ -64,12 +64,27 @@ export async function sessionLogout(session: Session) {
         body: JSON.stringify({
           length: differenceInMinutes(
             session.start_time,
-            session.end_time || 0
+            session.end_time || 0,
           ),
         }),
-      }
+      },
     );
     if (subscription.ok) {
+    }
+  }
+
+  if (session.plan_type === "bundle" && session.plan?.day_passes) {
+    const res = await fetch(`/api/subscription/${session.subscription_id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reduceDays: 1,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error("Session logout failed");
     }
   }
 
@@ -86,6 +101,8 @@ export async function sessionLogout(session: Session) {
   toast.success("Session logged out successfully");
   await mutate("/api/session");
 }
+
+export async function checkExpiration(session: Session) {}
 
 export async function logoutBundle(session: Session) {
   const supabase = await createClient();
@@ -154,4 +171,15 @@ export async function logoutBundle(session: Session) {
   if (updateError) {
     throw new Error("Failed to update subscription");
   }
+
+  const { data, error: sessionLogoutError } = await supabase
+    .from("sessions")
+    .update({ end_time: new Date(Date.now()) })
+    .eq("id", session.id)
+    .select();
+
+  if (!data || sessionLogoutError) throw new Error(sessionLogoutError?.message);
+
+  toast.success("Session logged out successfully");
+  await mutate("/api/session");
 }
